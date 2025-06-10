@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,14 @@ export default function DashboardPage() {
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
+      if (match) setUsername(decodeURIComponent(match[1]));
+    }
+  }, []);
 
   const handleAddCourse = () => {
     if (newCourse.subject && newCourse.courseName) {
@@ -69,6 +77,11 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {username && (
+        <div className="mb-4 text-right text-sm text-gray-700">
+          Connecté en tant que <span className="font-semibold">{username}</span>
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         <p className="text-gray-600">Gérez vos abonnements aux cours et suivez votre progression</p>
