@@ -18,11 +18,21 @@ import {
   Settings,
   BarChart3
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function ProfilePage() {
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
+      if (match) setUsername(decodeURIComponent(match[1]));
+    }
+  }, []);
+
   const user = {
-    name: "Alex Martin",
-    email: "alex.martin@universite.fr",
+    name: username || "Alex Martin",
+    email: username ? `${username}@universite.fr` : "alex.martin@universite.fr",
     university: "Université de Paris",
     joinDate: "2024-01-01",
     avatar: ""
@@ -62,6 +72,11 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {username && (
+        <div className="mb-4 text-right text-sm text-gray-700">
+          Connecté en tant que <span className="font-semibold">{username}</span>
+        </div>
+      )}
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center space-x-4 mb-6">

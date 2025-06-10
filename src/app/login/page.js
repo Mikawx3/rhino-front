@@ -1,9 +1,18 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GraduationCap, Shield, ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
+    if (match) setUsername(decodeURIComponent(match[1]));
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -27,11 +36,11 @@ export default function LoginPage() {
               </p>
               
               <Button asChild size="lg" className="w-full">
-                <Link href="/dashboard" className="flex items-center justify-center space-x-2">
+                <a href="https://login.insa-lyon.fr/cas/login?service=http://localhost:3000/api/auth/cas/callback" className="flex items-center justify-center space-x-2">
                   <Shield className="h-5 w-5" />
                   <span>Se connecter avec l'université</span>
                   <ExternalLink className="h-4 w-4" />
-                </Link>
+                </a>
               </Button>
             </div>
 
