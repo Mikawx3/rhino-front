@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, BookOpen, Brain, Mail } from "lucide-react";
+import { BookOpen, Brain, Mail } from "lucide-react";
 
 export default function Home() {
   return (
@@ -11,11 +11,11 @@ export default function Home() {
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <div className="bg-blue-600 p-4 rounded-full">
-              <GraduationCap className="h-12 w-12 text-white" />
+              <div className="text-white text-4xl">🦏</div>
             </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Bienvenue sur <span className="text-blue-600">StudyHub</span>
+            Bienvenue sur <span className="text-blue-600">LeRhino</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             La plateforme d'apprentissage intelligente qui vous accompagne dans vos études 

@@ -1,8 +1,8 @@
-# StudyHub - Plateforme d'apprentissage intelligente
+# LeRhino - Plateforme d'apprentissage intelligente
 
 ## 🎯 Description
 
-StudyHub est une application frontend moderne développée avec Next.js, conçue pour aider les étudiants à améliorer leur apprentissage grâce à des questions personnalisées générées par IA. Les étudiants peuvent s'abonner à des cours et recevoir automatiquement des questions adaptées par email.
+LeRhino est une application frontend moderne développée avec Next.js, conçue pour aider les étudiants à améliorer leur apprentissage grâce à des questions personnalisées générées par IA. Les étudiants peuvent s'abonner à des cours et recevoir automatiquement des questions adaptées par email.
 
 ## ✨ Fonctionnalités
 
@@ -168,4 +168,4 @@ Pour toute question ou suggestion concernant le projet, n'hésitez pas à ouvrir
 
 ---
 
-**StudyHub** - Révolutionner l'apprentissage avec l'intelligence artificielle 🎓
+**LeRhino** - Révolutionner l'apprentissage avec l'intelligence artificielle 🎓

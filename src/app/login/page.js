@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, Shield, ExternalLink } from "lucide-react";
+import { Shield, ExternalLink } from "lucide-react";
 
 export default function LoginPage() {
   return (
@@ -11,10 +11,10 @@ export default function LoginPage() {
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-blue-600 p-3 rounded-full">
-                <GraduationCap className="h-8 w-8 text-white" />
+                <div className="text-white text-2xl">🦏</div>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Connexion StudyHub</CardTitle>
+            <CardTitle className="text-2xl font-bold">Connexion LeRhino</CardTitle>
             <CardDescription>
               Connectez-vous avec votre compte universitaire pour accéder à vos cours
             </CardDescription>
@@ -48,7 +48,7 @@ export default function LoginPage() {
             </div>
 
             <div className="text-center text-sm text-gray-500">
-              <p>Première fois sur StudyHub ?</p>
+              <p>Première fois sur LeRhino ?</p>
               <p className="mt-1">
                 La connexion universitaire créera automatiquement votre compte.
               </p>

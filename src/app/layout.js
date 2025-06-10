@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "StudyHub - Plateforme d'apprentissage intelligente",
+  title: "LeRhino - Plateforme d'apprentissage intelligente",
   description: "Abonnez-vous à des cours et recevez des questions générées par IA pour améliorer votre apprentissage",
 };
 
