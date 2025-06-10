@@ -2,12 +2,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-<<<<<<< HEAD
 import { Shield, ExternalLink } from "lucide-react";
-=======
-import { GraduationCap, Shield, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
->>>>>>> bf16466831bd4ad751828f11a4d3f4a41258e3fd
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
