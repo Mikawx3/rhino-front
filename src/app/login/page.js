@@ -46,7 +46,7 @@ export default function LoginPage() {
     try {
       const success = await devLogin(profileId);
       if (success) {
-        window.location.href = '/dashboard';
+        window.location.href = '/test-auth-success';
       }
     } catch (error) {
       console.error('Test login failed:', error);
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Connexion CAS normale */}
+        {/* Connexion CAS réelle */}
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -117,7 +117,7 @@ export default function LoginPage() {
               </p>
               
               <Button asChild size="lg" className="w-full">
-                <a href="https://login.insa-lyon.fr/cas/login?service=http://localhost:3000/api/auth/cas/callback" className="flex items-center justify-center space-x-2">
+                <a href="https://login.insa-lyon.fr/cas/login?renew=true&service=http://app.insa-lyon.fr:3001/api/auth/cas/callback" className="flex items-center justify-center space-x-2">
                   <Shield className="h-5 w-5" />
                   <span>Se connecter avec l'université</span>
                   <ExternalLink className="h-4 w-4" />

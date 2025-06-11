@@ -159,6 +159,11 @@ export default function DashboardPage() {
       <div className="mb-4 text-right text-sm text-gray-700">
         Connecté en tant que <span className="font-semibold">{user.username}</span>
         <Badge variant="outline" className="ml-2">{user.role}</Badge>
+        {user.isCasUser && (
+          <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-300">
+            🎓 CAS
+          </Badge>
+        )}
       </div>
 
       {/* Header */}

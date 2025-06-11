@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { User, LayoutDashboard, LogIn, LogOut, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, LayoutDashboard, LogIn, LogOut, Loader2, University } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, logoutCAS } = useAuth();
 
   const publicNavItems = [
     { href: "/login", label: "Connexion", icon: LogIn }
@@ -22,8 +23,14 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      window.location.href = '/';
+      if (user?.isCasUser) {
+        // Pour les utilisateurs CAS, utiliser la déconnexion CAS complète
+        await logout(); // Cela va automatiquement rediriger vers CAS logout
+      } else {
+        // Pour les utilisateurs de test, déconnexion normale
+        await logout();
+        window.location.href = '/';
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -68,10 +75,20 @@ export default function Navigation() {
               
               {user && (
                 <>
-                  <div className="border-l border-gray-200 pl-4 ml-2">
-                    <span className="text-sm text-gray-600">
-                      Bonjour, <span className="font-medium">{user.username}</span>
-                    </span>
+                  <div className="border-l border-gray-200 pl-4 ml-2 flex items-center space-x-2">
+                    <div className="flex items-center space-x-2">
+                      {user.isCasUser && (
+                        <University className="h-4 w-4 text-blue-600" />
+                      )}
+                      <span className="text-sm text-gray-600">
+                        Bonjour, <span className="font-medium">{user.username}</span>
+                      </span>
+                    </div>
+                    {user.isCasUser && (
+                      <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                        CAS
+                      </Badge>
+                    )}
                   </div>
                   <Button
                     variant="ghost"
@@ -80,7 +97,7 @@ export default function Navigation() {
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Déconnexion
+                    {user.isCasUser ? "Déconnexion CAS" : "Déconnexion"}
                   </Button>
                 </>
               )}

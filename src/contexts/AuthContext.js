@@ -83,16 +83,80 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Vérifier la session au chargement (mode statique)
+  // Vérifier la session au chargement (mode statique + CAS)
   useEffect(() => {
     checkSession();
   }, []);
+
+  const getCookie = (name) => {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+    return null;
+  };
+
+  const determineCasUserRole = (username) => {
+    // Logique pour déterminer le rôle basé sur le username
+    // Vous pouvez ajuster selon vos besoins
+    if (username.includes('admin') || username.includes('prof') || username.startsWith('p')) {
+      return 'admin';
+    } else if (username.includes('teacher') || username.includes('enseignant')) {
+      return 'teacher';
+    } else {
+      return 'student';
+    }
+  };
+
+  const getCasUserSubscriptions = (role) => {
+    switch (role) {
+      case 'admin':
+        return ['*']; // Accès complet
+      case 'teacher':
+        return ['JAVASCRIPT', 'PYTHON', 'REACT', 'VUE', 'NODEJS'];
+      case 'student':
+      default:
+        return ['JAVASCRIPT', 'PYTHON', 'REACT'];
+    }
+  };
 
   const checkSession = async () => {
     try {
       setLoading(true);
       
-      // Simuler une vérification de session (récupérer depuis localStorage)
+      // 1. Vérifier d'abord le cookie CAS 'user'
+      const casUsername = getCookie('user');
+      console.log(casUsername);
+      
+      
+      if (casUsername) {
+        // Déterminer le rôle automatiquement
+        const role = determineCasUserRole(casUsername);
+        const subscriptions = getCasUserSubscriptions(role);
+        
+        // Créer un profil pour l'utilisateur CAS
+        const casProfile = {
+          id: `cas_${casUsername}`,
+          username: casUsername,
+          email: `${casUsername}@insa-lyon.fr`,
+          role: role,
+          subscriptions: subscriptions,
+          avatar: null,
+          created_at: new Date().toISOString(),
+          stats: {
+            totalChallenges: Math.floor(Math.random() * 10) + 1,
+            completedChallenges: Math.floor(Math.random() * 5) + 1,
+            streak: Math.floor(Math.random() * 7) + 1
+          },
+          isCasUser: true // Marquer comme utilisateur CAS
+        };
+        
+        setUser(casProfile);
+        setError(null);
+        return;
+      }
+      
+      // 2. Sinon, vérifier localStorage pour les profils de test
       const storedUserId = localStorage.getItem('rhino_static_user_id');
       
       if (storedUserId) {
@@ -114,7 +178,9 @@ export function AuthProvider({ children }) {
 
   const login = async (userData, token) => {
     setUser(userData);
-    localStorage.setItem('rhino_static_user_id', userData.id.toString());
+    if (!userData.isCasUser) {
+      localStorage.setItem('rhino_static_user_id', userData.id.toString());
+    }
     setError(null);
   };
 
@@ -154,8 +220,29 @@ export function AuthProvider({ children }) {
       console.error('Logout failed:', err);
     }
     
+    const isCurrentlyCasUser = user?.isCasUser;
+    
     setUser(null);
     localStorage.removeItem('rhino_static_user_id');
+    
+    // Supprimer le cookie CAS si il existe
+    if (getCookie('user')) {
+      document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+    
+    // Si c'était un utilisateur CAS, rediriger vers la déconnexion CAS complète
+    if (isCurrentlyCasUser) {
+      logoutCAS();
+    }
+  };
+
+  const logoutCAS = () => {
+    // URL de déconnexion CAS de l'INSA Lyon
+    const casLogoutUrl = 'https://login.insa-lyon.fr/cas/logout';
+    const serviceUrl = encodeURIComponent('http://app.insa-lyon.fr:3001/login');
+    
+    // Rediriger vers la déconnexion CAS avec retour vers la page de login
+    window.location.href = `${casLogoutUrl}?service=${serviceUrl}`;
   };
 
   const value = {
@@ -165,6 +252,7 @@ export function AuthProvider({ children }) {
     login,
     devLogin,
     logout,
+    logoutCAS,
     checkSession,
     // Exposer les profils disponibles
     availableProfiles: STATIC_PROFILES

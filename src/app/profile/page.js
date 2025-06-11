@@ -16,30 +16,47 @@ import {
   Target,
   Mail,
   Settings,
-  BarChart3
+  BarChart3,
+  University,
+  Loader2
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProfilePage() {
-  const [username, setUsername] = useState("");
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
-      if (match) setUsername(decodeURIComponent(match[1]));
-    }
-  }, []);
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Chargement du profil...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const user = {
-    name: username || "Alex Martin",
-    email: username ? `${username}@universite.fr` : "alex.martin@universite.fr",
-    university: "Université de Paris",
-    joinDate: "2024-01-01",
-    avatar: ""
-  };
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+          <p className="text-gray-600 mb-4">
+            Veuillez vous connecter pour accéder à votre profil
+          </p>
+          <Button asChild>
+            <a href="/login">Se connecter</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const stats = {
-    totalCourses: 3,
+  const stats = user.stats || {
+    totalCourses: user.subscriptions?.length || 0,
     questionsAnswered: 152,
     studyTime: "47h 30m",
     averageScore: 78,
@@ -47,51 +64,64 @@ export default function ProfilePage() {
     totalQuestions: 189
   };
 
-  const courseProgress = [
-    { name: "Algèbre Linéaire", progress: 85, subject: "Mathématiques" },
-    { name: "Algorithmes et Structures de Données", progress: 92, subject: "Informatique" },
-    { name: "Mécanique Quantique", progress: 67, subject: "Physique" }
-  ];
+  const courseProgress = user.subscriptions?.map((sub, index) => ({
+    name: sub === "*" ? "Accès Complet" : sub,
+    progress: 65 + Math.floor(Math.random() * 30), // Simulation
+    subject: sub === "*" ? "Administration" : "Programmation"
+  })) || [];
 
   const recentActivity = [
-    { date: "2024-01-25", activity: "5 questions répondues en Algèbre Linéaire", score: 80 },
-    { date: "2024-01-24", activity: "Nouveau cours ajouté: Mécanique Quantique", score: null },
-    { date: "2024-01-23", activity: "7 questions répondues en Informatique", score: 95 },
-    { date: "2024-01-22", activity: "3 questions répondues en Mathématiques", score: 70 },
-    { date: "2024-01-21", activity: "Série de 10 jours consécutifs atteinte!", score: null }
+    { date: "2024-01-25", activity: `Questions répondues en ${user.subscriptions?.[0] || 'Programmation'}`, score: 80 },
+    { date: "2024-01-24", activity: user.isCasUser ? "Connexion via CAS universitaire" : "Connexion test", score: null },
+    { date: "2024-01-23", activity: "Consultation des documents de cours", score: 95 },
+    { date: "2024-01-22", activity: "Participation au challenge du jour", score: 70 },
+    { date: "2024-01-21", activity: "Consultation du dashboard", score: null }
   ];
 
   const achievements = [
     { name: "Premier pas", description: "Premier cours ajouté", icon: "🎯", earned: true },
-    { name: "Assidu", description: "10 jours consécutifs", icon: "🔥", earned: true },
-    { name: "Studieux", description: "100 questions répondues", icon: "📚", earned: true },
+    { name: "Assidu", description: "10 jours consécutifs", icon: "🔥", earned: user.stats?.streak >= 10 },
+    { name: "Studieux", description: "100 questions répondues", icon: "📚", earned: user.stats?.totalChallenges >= 10 },
     { name: "Excellence", description: "90% de moyenne", icon: "⭐", earned: false },
-    { name: "Marathonien", description: "50h d'étude", icon: "💪", earned: false },
-    { name: "Polyvalent", description: "5 matières différentes", icon: "🎨", earned: false }
+    { name: "CAS User", description: "Connexion universitaire", icon: "🎓", earned: user.isCasUser },
+    { name: "Polyvalent", description: "5 matières différentes", icon: "🎨", earned: user.subscriptions?.length >= 5 }
   ];
+  console.log(user);
 
   return (
+
     <div className="container mx-auto px-4 py-8">
-      {username && (
-        <div className="mb-4 text-right text-sm text-gray-700">
-          Connecté en tant que <span className="font-semibold">{username}</span>
-        </div>
-      )}
+      {/* User info */}
+      <div className="mb-4 text-right text-sm text-gray-700">
+        Connecté en tant que <span className="font-semibold">{user.username}</span>
+        <Badge variant="outline" className="ml-2">{user.role}</Badge>
+        {user.isCasUser && (
+          <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-300">
+            🎓 CAS
+          </Badge>
+        )}
+      </div>
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center space-x-4 mb-6">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={user.avatar} alt={user.username} />
             <AvatarFallback className="text-lg bg-blue-100 text-blue-700">
-              {user.name.split(' ').map(n => n[0]).join('')}
+              {user.username.split('').slice(0, 2).join('').toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{user.username}</h1>
             <p className="text-gray-600">{user.email}</p>
-            <p className="text-sm text-gray-500">{user.university}</p>
+            {user.isCasUser && (
+              <div className="flex items-center mt-1 text-sm text-blue-600">
+                <University className="h-4 w-4 mr-1" />
+                <span>INSA Lyon - Authentification CAS</span>
+              </div>
+            )}
             <Badge variant="outline" className="mt-2">
-              Membre depuis {new Date(user.joinDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              Membre depuis {new Date(user.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
             </Badge>
           </div>
           <div className="ml-auto">
