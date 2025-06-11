@@ -4,15 +4,86 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext({});
 
-// Configuration de l'API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+// Profils de test statiques (simulation backend)
+const STATIC_PROFILES = [
+  {
+    id: 1,
+    username: "student1",
+    email: "student1@example.com",
+    role: "student",
+    subscriptions: ["JAVASCRIPT", "PYTHON", "REACT"],
+    avatar: null,
+    created_at: "2024-01-15T10:00:00Z",
+    stats: {
+      totalChallenges: 15,
+      completedChallenges: 12,
+      streak: 5
+    }
+  },
+  {
+    id: 2,
+    username: "student2", 
+    email: "student2@example.com",
+    role: "student",
+    subscriptions: ["PYTHON", "VUE"],
+    avatar: null,
+    created_at: "2024-01-20T14:30:00Z",
+    stats: {
+      totalChallenges: 8,
+      completedChallenges: 6,
+      streak: 2
+    }
+  },
+  {
+    id: 3,
+    username: "teacher1",
+    email: "teacher1@example.com", 
+    role: "teacher",
+    subscriptions: ["JAVASCRIPT", "PYTHON", "REACT", "VUE"],
+    avatar: null,
+    created_at: "2024-01-10T09:00:00Z",
+    stats: {
+      studentsCount: 25,
+      coursesCreated: 8,
+      totalDocuments: 42
+    }
+  },
+  {
+    id: 4,
+    username: "teacher2",
+    email: "teacher2@example.com",
+    role: "teacher", 
+    subscriptions: ["NODEJS", "REACT"],
+    avatar: null,
+    created_at: "2024-01-12T16:45:00Z",
+    stats: {
+      studentsCount: 18,
+      coursesCreated: 5,
+      totalDocuments: 28
+    }
+  },
+  {
+    id: 5,
+    username: "admin1",
+    email: "admin1@example.com",
+    role: "admin",
+    subscriptions: ["*"], // Accès à tout
+    avatar: null,
+    created_at: "2024-01-01T08:00:00Z",
+    stats: {
+      totalUsers: 150,
+      totalCourses: 25,
+      systemUptime: "99.9%"
+    }
+  }
+];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Vérifier la session au chargement
+  // Vérifier la session au chargement (mode statique)
   useEffect(() => {
     checkSession();
   }, []);
@@ -21,22 +92,16 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       
-      // Récupérer le token depuis les cookies ou localStorage
-      const token = getCookie('rhino_token') || localStorage.getItem('rhino_token');
+      // Simuler une vérification de session (récupérer depuis localStorage)
+      const storedUserId = localStorage.getItem('rhino_static_user_id');
       
-      if (token) {
-        // Vérifier la validité du token
-        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+      if (storedUserId) {
+        // Simuler un délai réseau
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setUser(result.data.user);
-          }
+        const profile = STATIC_PROFILES.find(p => p.id.toString() === storedUserId);
+        if (profile) {
+          setUser(profile);
         }
       }
     } catch (err) {
@@ -49,35 +114,32 @@ export function AuthProvider({ children }) {
 
   const login = async (userData, token) => {
     setUser(userData);
-    localStorage.setItem('rhino_token', token);
+    localStorage.setItem('rhino_static_user_id', userData.id.toString());
     setError(null);
   };
 
   const devLogin = async (userId) => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/auth/dev/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userId)
-      });
-
-      const result = await response.json();
       
-      if (result.success) {
-        setUser(result.data.user);
-        localStorage.setItem('rhino_token', result.data.token);
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Trouver le profil correspondant
+      const profile = STATIC_PROFILES.find(p => p.id === userId);
+      
+      if (profile) {
+        setUser(profile);
+        localStorage.setItem('rhino_static_user_id', profile.id.toString());
         setError(null);
         return true;
       } else {
-        setError(result.message);
+        setError('Profil non trouvé');
         return false;
       }
     } catch (err) {
       console.error('Login failed:', err);
-      setError('Login failed');
+      setError('Échec de la connexion');
       return false;
     } finally {
       setLoading(false);
@@ -86,30 +148,14 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      const token = getCookie('rhino_token') || localStorage.getItem('rhino_token');
-      
-      if (token) {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      }
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
     } catch (err) {
       console.error('Logout failed:', err);
     }
     
     setUser(null);
-    localStorage.removeItem('rhino_token');
-    document.cookie = 'rhino_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-  };
-
-  const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
+    localStorage.removeItem('rhino_static_user_id');
   };
 
   const value = {
@@ -119,7 +165,9 @@ export function AuthProvider({ children }) {
     login,
     devLogin,
     logout,
-    checkSession
+    checkSession,
+    // Exposer les profils disponibles
+    availableProfiles: STATIC_PROFILES
   };
 
   return (

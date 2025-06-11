@@ -69,7 +69,7 @@ export default function TestProfilesPage() {
     try {
       const success = await devLogin(profileId);
       if (success) {
-        window.location.href = '/dashboard';
+        window.location.href = '/test-auth-success';
       }
     } catch (error) {
       console.error('Test login failed:', error);
