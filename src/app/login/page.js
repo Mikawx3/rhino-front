@@ -2,20 +2,101 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ExternalLink } from "lucide-react";
+import { Shield, ExternalLink, User, Crown, GraduationCap, TestTube } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
+  const { devLogin, loading } = useAuth();
 
   useEffect(() => {
     const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
     if (match) setUsername(decodeURIComponent(match[1]));
   }, []);
 
+  const testProfiles = [
+    {
+      id: 1,
+      username: "student1",
+      role: "student",
+      icon: GraduationCap,
+      color: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+      description: "Étudiant - Accès lecture"
+    },
+    {
+      id: 3,
+      username: "teacher1", 
+      role: "teacher",
+      icon: User,
+      color: "bg-green-100 text-green-800 hover:bg-green-200",
+      description: "Enseignant - Création de cours"
+    },
+    {
+      id: 5,
+      username: "admin1",
+      role: "admin", 
+      icon: Crown,
+      color: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+      description: "Admin - Accès complet"
+    }
+  ];
+
+  const handleTestLogin = async (profileId) => {
+    try {
+      const success = await devLogin(profileId);
+      if (success) {
+        window.location.href = '/dashboard';
+      }
+    } catch (error) {
+      console.error('Test login failed:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-2xl space-y-6">
+        {/* Section de test temporaire - EN TÊTE */}
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center text-orange-800">
+              <TestTube className="h-5 w-5 mr-2" />
+              🧪 Mode Test - Connexion Rapide
+            </CardTitle>
+            <CardDescription className="text-orange-700">
+              Testez l'application avec différents profils utilisateur (temporaire)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {testProfiles.map((profile) => {
+                const Icon = profile.icon;
+                return (
+                  <Button
+                    key={profile.id}
+                    onClick={() => handleTestLogin(profile.id)}
+                    disabled={loading}
+                    variant="outline"
+                    className={`p-4 h-auto flex-col space-y-2 ${profile.color} border-current`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <div className="text-center">
+                      <div className="font-semibold">{profile.username}</div>
+                      <div className="text-xs opacity-75">{profile.description}</div>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+            <div className="mt-3 text-center">
+              <Link href="/test-profiles" className="text-orange-600 hover:underline text-xs">
+                → Interface de test complète
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Connexion CAS normale */}
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -65,7 +146,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center">
+        <div className="text-center">
           <Link href="/" className="text-blue-600 hover:underline text-sm">
             ← Retour à l'accueil
           </Link>

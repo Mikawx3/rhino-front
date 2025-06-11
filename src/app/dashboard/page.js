@@ -5,87 +5,177 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, BookOpen, Trash2, Calendar, Clock } from "lucide-react";
+import { Plus, BookOpen, Trash2, Calendar, Clock, AlertCircle, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRhinoAPI } from "@/lib/api-service";
 
 export default function DashboardPage() {
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      subject: "Mathématiques",
-      courseName: "Algèbre Linéaire",
-      subscriptionDate: "2024-01-15"
-    },
-    {
-      id: 2,
-      subject: "Informatique",
-      courseName: "Algorithmes et Structures de Données",
-      subscriptionDate: "2024-01-10"
-    },
-    {
-      id: 3,
-      subject: "Physique",
-      courseName: "Mécanique Quantique",
-      subscriptionDate: "2024-01-20"
-    }
-  ]);
-
-  const [newCourse, setNewCourse] = useState({
-    subject: "",
-    courseName: ""
+  const { user, loading: authLoading } = useAuth();
+  const apiService = useRhinoAPI(user?.id);
+  const [matieres, setMatieres] = useState([]);
+  const [todayChallenge, setTodayChallenge] = useState(null);
+  const [newMatiere, setNewMatiere] = useState({
+    name: "",
+    description: ""
   });
-
   const [showAddForm, setShowAddForm] = useState(false);
-  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Charger les données au montage
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
-      if (match) setUsername(decodeURIComponent(match[1]));
+    if (user && apiService) {
+      loadDashboardData();
     }
-  }, []);
+  }, [user, apiService]);
 
-  const handleAddCourse = () => {
-    if (newCourse.subject && newCourse.courseName) {
-      const course = {
-        id: Date.now(),
-        subject: newCourse.subject,
-        courseName: newCourse.courseName,
-        subscriptionDate: new Date().toISOString().split('T')[0]
-      };
-      setCourses([...courses, course]);
-      setNewCourse({ subject: "", courseName: "" });
-      setShowAddForm(false);
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Charger les matières et le challenge en parallèle
+      const [matieresResponse, challengeResponse] = await Promise.allSettled([
+        apiService.getMatieres(),
+        apiService.getTodayChallenge()
+      ]);
+
+      // Traiter les matières
+      if (matieresResponse.status === 'fulfilled') {
+        setMatieres(matieresResponse.value.matieres || []);
+      } else {
+        console.error('Failed to load subjects:', matieresResponse.reason);
+      }
+
+      // Traiter le challenge du jour
+      if (challengeResponse.status === 'fulfilled') {
+        setTodayChallenge(challengeResponse.value.challenge || null);
+      } else {
+        console.error('Failed to load challenge:', challengeResponse.reason);
+      }
+
+    } catch (err) {
+      console.error('Dashboard loading error:', err);
+      setError('Erreur lors du chargement du tableau de bord');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRemoveCourse = (id) => {
-    setCourses(courses.filter(course => course.id !== id));
+  const handleAddMatiere = async () => {
+    if (!newMatiere.name || !newMatiere.description) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+
+    try {
+      setError(null);
+      await apiService.createMatiere({
+        name: newMatiere.name.toUpperCase(),
+        description: newMatiere.description
+      });
+
+      // Recharger les matières
+      const response = await apiService.getMatieres();
+      setMatieres(response.matieres || []);
+      
+      // Réinitialiser le formulaire
+      setNewMatiere({ name: "", description: "" });
+      setShowAddForm(false);
+    } catch (err) {
+      console.error('Failed to create subject:', err);
+      setError('Erreur lors de la création de la matière');
+    }
+  };
+
+  const handleRemoveMatiere = async (matiereName) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer la matière "${matiereName}" ?`)) {
+      return;
+    }
+
+    try {
+      setError(null);
+      await apiService.deleteMatiere(matiereName);
+      
+      // Retirer de la liste locale
+      setMatieres(matieres.filter(m => m.name !== matiereName));
+    } catch (err) {
+      console.error('Failed to delete subject:', err);
+      setError('Erreur lors de la suppression de la matière');
+    }
   };
 
   const getSubjectColor = (subject) => {
     const colors = {
-      "Mathématiques": "bg-blue-100 text-blue-800",
-      "Informatique": "bg-green-100 text-green-800",
-      "Physique": "bg-purple-100 text-purple-800",
-      "Chimie": "bg-yellow-100 text-yellow-800",
-      "Biologie": "bg-red-100 text-red-800",
-      "Histoire": "bg-orange-100 text-orange-800",
-      "Littérature": "bg-pink-100 text-pink-800"
+      "JAVASCRIPT": "bg-yellow-100 text-yellow-800",
+      "PYTHON": "bg-blue-100 text-blue-800",
+      "REACT": "bg-cyan-100 text-cyan-800",
+      "VUE": "bg-green-100 text-green-800",
+      "NODEJS": "bg-emerald-100 text-emerald-800",
+      "MATHEMATIQUES": "bg-purple-100 text-purple-800",
+      "INFORMATIQUE": "bg-indigo-100 text-indigo-800",
+      "PHYSIQUE": "bg-red-100 text-red-800"
     };
-    return colors[subject] || "bg-gray-100 text-gray-800";
+    return colors[subject.toUpperCase()] || "bg-gray-100 text-gray-800";
   };
+
+  const canManageSubjects = user?.role === 'teacher' || user?.role === 'admin';
+
+  // Loading states
+  if (authLoading || loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Chargement du tableau de bord...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+          <p className="text-gray-600 mb-4">
+            Veuillez vous connecter pour accéder au tableau de bord
+          </p>
+          <Button asChild>
+            <a href="/login">Se connecter</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {username && (
-        <div className="mb-4 text-right text-sm text-gray-700">
-          Connecté en tant que <span className="font-semibold">{username}</span>
-        </div>
-      )}
+      {/* User info */}
+      <div className="mb-4 text-right text-sm text-gray-700">
+        Connecté en tant que <span className="font-semibold">{user.username}</span>
+        <Badge variant="outline" className="ml-2">{user.role}</Badge>
+      </div>
+
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         <p className="text-gray-600">Gérez vos abonnements aux cours et suivez votre progression</p>
       </div>
+
+      {/* Error display */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+            <span className="text-red-700">{error}</span>
+          </div>
+        </div>
+      )}
 
       {/* Stats Overview */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -95,77 +185,97 @@ export default function DashboardPage() {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{courses.length}</div>
+            <div className="text-2xl font-bold">{matieres.length}</div>
             <p className="text-xs text-muted-foreground">
-              cours auxquels vous êtes abonné
+              matières disponibles
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Questions reçues</CardTitle>
+            <CardTitle className="text-sm font-medium">Challenge du jour</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">47</div>
+            <div className="text-2xl font-bold">
+              {todayChallenge ? "✅" : "❌"}
+            </div>
             <p className="text-xs text-muted-foreground">
-              cette semaine
+              {todayChallenge ? "Disponible" : "Aucun challenge"}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Temps d'étude</CardTitle>
+            <CardTitle className="text-sm font-medium">Votre rôle</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12h 30m</div>
+            <div className="text-2xl font-bold">{user.role}</div>
             <p className="text-xs text-muted-foreground">
-              cette semaine
+              niveau d'accès
             </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Challenge du jour */}
+      {todayChallenge && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>🏆 Challenge du jour</CardTitle>
+            <CardDescription>
+              Matière: {todayChallenge.matiere} • {todayChallenge.date}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">{todayChallenge.question}</p>
+            <Button>Répondre au challenge</Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Add Course Section */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            Mes Cours
-            <Button 
-              onClick={() => setShowAddForm(!showAddForm)}
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un cours
-            </Button>
+            Matières Disponibles
+            {canManageSubjects && (
+              <Button 
+                onClick={() => setShowAddForm(!showAddForm)}
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter une matière
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         
-        {showAddForm && (
+        {showAddForm && canManageSubjects && (
           <CardContent className="border-t">
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Matière</label>
+                <label className="text-sm font-medium mb-2 block">Nom de la matière</label>
                 <Input
-                  placeholder="ex: Mathématiques, Informatique..."
-                  value={newCourse.subject}
-                  onChange={(e) => setNewCourse({...newCourse, subject: e.target.value})}
+                  placeholder="ex: JAVASCRIPT, PYTHON..."
+                  value={newMatiere.name}
+                  onChange={(e) => setNewMatiere({...newMatiere, name: e.target.value})}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Nom du cours</label>
+                <label className="text-sm font-medium mb-2 block">Description</label>
                 <Input
-                  placeholder="ex: Algèbre Linéaire"
-                  value={newCourse.courseName}
-                  onChange={(e) => setNewCourse({...newCourse, courseName: e.target.value})}
+                  placeholder="ex: Cours de JavaScript moderne"
+                  value={newMatiere.description}
+                  onChange={(e) => setNewMatiere({...newMatiere, description: e.target.value})}
                 />
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button onClick={handleAddCourse}>Ajouter</Button>
+              <Button onClick={handleAddMatiere}>Ajouter</Button>
               <Button variant="outline" onClick={() => setShowAddForm(false)}>
                 Annuler
               </Button>
@@ -176,54 +286,61 @@ export default function DashboardPage() {
 
       {/* Courses List */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <Card key={course.id} className="hover:shadow-md transition-shadow">
+        {matieres.map((matiere) => (
+          <Card key={matiere.name} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <Badge className={getSubjectColor(course.subject)}>
-                    {course.subject}
+                  <Badge className={getSubjectColor(matiere.name)}>
+                    {matiere.name}
                   </Badge>
-                  <CardTitle className="mt-2 text-lg">{course.courseName}</CardTitle>
+                  <CardTitle className="mt-2 text-lg">{matiere.description || matiere.name}</CardTitle>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveCourse(course.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {canManageSubjects && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveMatiere(matiere.name)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription className="flex items-center text-sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                Abonné depuis le {new Date(course.subscriptionDate).toLocaleDateString('fr-FR')}
+                <BookOpen className="h-4 w-4 mr-1" />
+                {matiere.document_count || 0} documents
               </CardDescription>
-              <div className="mt-4 flex justify-between items-center">
-                <span className="text-sm text-green-600 font-medium">Actif</span>
-                <span className="text-xs text-gray-500">Questions quotidiennes</span>
-              </div>
+              {matiere.last_update && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Mis à jour: {new Date(matiere.last_update).toLocaleDateString('fr-FR')}
+                </p>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {courses.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <CardTitle className="text-xl mb-2">Aucun cours encore</CardTitle>
-            <CardDescription className="mb-4">
-              Commencez par ajouter vos premiers cours pour recevoir des questions personnalisées.
-            </CardDescription>
+      {matieres.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Aucune matière disponible
+          </h3>
+          <p className="text-gray-500 mb-4">
+            {canManageSubjects 
+              ? "Commencez par créer votre première matière" 
+              : "Aucune matière n'a encore été créée"}
+          </p>
+          {canManageSubjects && (
             <Button onClick={() => setShowAddForm(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Ajouter votre premier cours
+              Créer une matière
             </Button>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       )}
     </div>
   );
