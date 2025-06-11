@@ -86,7 +86,7 @@ export default function ProfilePage() {
     { name: "CAS User", description: "Connexion universitaire", icon: "🎓", earned: user.isCasUser },
     { name: "Polyvalent", description: "5 matières différentes", icon: "🎨", earned: user.subscriptions?.length >= 5 }
   ];
-  console.log(user);
+  console.log("USER",user);
 
   return (
 

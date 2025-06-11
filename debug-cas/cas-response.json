@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-06-11T15:04:20.893Z",
+  "ticket": "ST-225035-45WBtqqdXMYgexigLaj4-dsi68",
+  "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-225035-45WBtqqdXMYgexigLaj4-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
+  "responseStatus": 200,
+  "responseHeaders": {
+    "connection": "Keep-Alive",
+    "content-encoding": "gzip",
+    "content-language": "fr",
+    "content-length": "134",
+    "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline';",
+    "content-type": "application/xml;charset=UTF-8",
+    "date": "Wed, 11 Jun 2025 15:04:20 GMT",
+    "keep-alive": "timeout=5, max=100",
+    "server": "Apache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-robots-tag": "noindex, nofollow, noarchive"
+  },
+  "responseText": "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n    <cas:authenticationSuccess>\n        <cas:user>mounissi</cas:user>\n        </cas:authenticationSuccess>\n</cas:serviceResponse>\n",
+  "cookies": "__next_hmr_refresh_hash__=313; AGIMUS=TRACE-65518-GyOs0HzwetvwDu2UvqeHAhGy73e36Kp0epdVSb1anDKlIenQzT-dsi68"
+}
