@@ -122,6 +122,13 @@ export default function DebugCasPage() {
                       <pre className="text-xs">{JSON.stringify(casDebugInfo.responseHeaders, null, 2)}</pre>
                     </div>
                   </div>
+
+                  <div>
+                    <label className="font-semibold">Réponse:</label>
+                    <div className="bg-gray-100 p-3 rounded">
+                      <pre className="text-xs">{JSON.stringify(casDebugInfo.response, null, 2)}</pre>
+                    </div>
+                  </div>
                   
                   <div>
                     <label className="font-semibold">Cookies de la requête:</label>

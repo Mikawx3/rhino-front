@@ -25,6 +25,7 @@ export async function GET(req) {
     responseHeaders: Object.fromEntries(response.headers.entries()),
     responseText: text,
     cookies: req.headers.get('cookie') || '',
+    response: response,
   };
 
   try {
@@ -42,13 +43,6 @@ export async function GET(req) {
   } catch (error) {
     console.error('❌ Error saving debug info:', error);
   }
-
-  // AFFICHAGE COMPLET DE LA RÉPONSE CAS
-  console.log('═══════════════════════════════════════');
-  console.log('🔍 RÉPONSE COMPLÈTE DU CAS INSA LYON:');
-  console.log('═══════════════════════════════════════');
-  console.log(text);
-  console.log('═══════════════════════════════════════');
 
   // Extraction simple du username depuis la réponse XML
   const usernameMatch = text.match(/<cas:user>([^<]+)<\/cas:user>/);

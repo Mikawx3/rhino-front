@@ -19,7 +19,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       debugInfo: debugInfo,
-      message: 'Données CAS récupérées avec succès'
+      message: 'Données CAS récupérées avec succès',
     });
     
   } catch (error) {
