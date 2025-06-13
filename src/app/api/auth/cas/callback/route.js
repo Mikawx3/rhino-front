@@ -53,40 +53,65 @@ export async function GET(req) {
   const username = usernameMatch[1];
   console.log('👤 Username extrait:', username);
 
-  // Tentative d'extraction de l'email depuis la réponse
-  const emailMatch = text.match(/<cas:mail>([^<]+)<\/cas:mail>/);
-  const emailMatch2 = text.match(/<cas:email>([^<]+)<\/cas:email>/);
-  const emailMatch3 = text.match(/<cas:emailAddress>([^<]+)<\/cas:emailAddress>/);
-  
-  let email = null;
-  if (emailMatch) {
-    email = emailMatch[1];
-    console.log('📧 Email trouvé (cas:mail):', email);
-  } else if (emailMatch2) {
-    email = emailMatch2[1];
-    console.log('📧 Email trouvé (cas:email):', email);
-  } else if (emailMatch3) {
-    email = emailMatch3[1];
-    console.log('📧 Email trouvé (cas:emailAddress):', email);
-  } else {
-    console.log('⚠️ Aucun email trouvé dans la réponse CAS');
+  // Déclaration des variables en dehors du bloc try
+  let userExists = false;
+  let userId = null;
+
+  // Vérification/création de l'utilisateur via l'API
+  try {
+    // D'abord, vérifier si l'utilisateur existe déjà
+    const usersResponse = await fetch('http://app.insa-lyon.fr:8000/api/users/');
+    const usersData = await usersResponse.json();
+    
+    if (usersData.success && usersData.data && usersData.data.users) {
+      const existingUser = usersData.data.users.find(user => user.username === username);
+      if (existingUser) {
+        userExists = true;
+        userId = existingUser.id;
+        console.log('✅ Utilisateur existant trouvé:', existingUser);
+      }
+    }
+    
+    // Si l'utilisateur n'existe pas, le créer
+    if (!userExists) {
+      console.log('🆕 Création d\'un nouvel utilisateur:', username);
+      
+      const registerResponse = await fetch('http://app.insa-lyon.fr:8000/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username,
+          email: `${username}@insa-lyon.fr`, // Email généré basé sur le username
+          role: 'student', // Rôle par défaut
+          subscriptions: []
+        })
+      });
+      
+      const registerData = await registerResponse.json();
+      
+      if (registerData.success) {
+        userId = registerData.data.user_id;
+        console.log('✅ Utilisateur créé avec succès, ID:', userId);
+      } else {
+        console.error('❌ Erreur lors de la création de l\'utilisateur:', registerData);
+        return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=usercreation');
+      }
+    } else {
+      console.log('✅ Utilisateur existant, ID:', userId);
+    }
+    
+  } catch (error) {
+    console.error('❌ Erreur lors de la communication avec l\'API:', error);
+    return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=apierror');
   }
 
-  // Extraction d'autres attributs possibles
-  const attributesMatch = text.match(/<cas:attributes>(.*?)<\/cas:attributes>/s);
-  if (attributesMatch) {
-    console.log('🏷️ Attributs CAS trouvés:', attributesMatch[1]);
-  }
-
-  // Création d'un cookie de session (simple, non sécurisé pour la prod)
+  // Création d'un cookie de session
   const res = NextResponse.redirect('http://app.insa-lyon.fr:3001/dashboard');
   
   res.cookies.set('user', username, { path: '/', httpOnly: false });
-  
-  // Si on a trouvé un email, l'ajouter aussi comme cookie
-  if (email) {
-    res.cookies.set('user_email', email, { path: '/', httpOnly: false });
-  }
+  res.cookies.set('user_id', userId.toString(), { path: '/', httpOnly: false });
   
   return res;
 } 
