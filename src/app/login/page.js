@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, ExternalLink, User, Crown, GraduationCap, TestTube } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { config } from '@/config/app';
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -117,7 +118,7 @@ export default function LoginPage() {
               </p>
               
               <Button asChild size="lg" className="w-full">
-                <a href="https://login.insa-lyon.fr/cas/login?renew=true&service=http://app.insa-lyon.fr:3001/api/auth/cas/callback" className="flex items-center justify-center space-x-2">
+                <a href={`${config.casLoginUrl}?renew=true&service=${config.getCasCallbackUrl()}`} className="flex items-center justify-center space-x-2">
                   <Shield className="h-5 w-5" />
                   <span>Se connecter avec l'université</span>
                   <ExternalLink className="h-4 w-4" />

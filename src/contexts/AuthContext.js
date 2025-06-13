@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { config } from '@/config/app';
 
 const AuthContext = createContext({});
 
@@ -237,12 +238,8 @@ export function AuthProvider({ children }) {
   };
 
   const logoutCAS = () => {
-    // URL de déconnexion CAS de l'INSA Lyon
-    const casLogoutUrl = 'https://login.insa-lyon.fr/cas/logout';
-    const serviceUrl = encodeURIComponent('http://app.insa-lyon.fr:3001/login');
-    
-    // Rediriger vers la déconnexion CAS avec retour vers la page de login
-    window.location.href = `${casLogoutUrl}?service=${serviceUrl}`;
+    const serviceUrl = encodeURIComponent(config.getLoginUrl());
+    window.location.href = `${config.casLogoutUrl}?service=${serviceUrl}`;
   };
 
   const value = {

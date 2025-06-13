@@ -1,16 +1,23 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { config } from '@/config/app';
+import { headers } from 'next/headers';
 
 export async function GET(req) {
+  const headersList = headers();
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'http';
+  const baseUrl = `${protocol}://${host}`;
+
   const { searchParams } = new URL(req.url);
   const ticket = searchParams.get('ticket');
   if (!ticket) {
-    return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=noticket');
+    return NextResponse.redirect(`${baseUrl}/login?error=noticket`);
   }
 
-  const serviceUrl = 'http://app.insa-lyon.fr:3001/api/auth/cas/callback';
-  const casValidateUrl = `https://login.insa-lyon.fr/cas/serviceValidate?ticket=${ticket}&service=${encodeURIComponent(serviceUrl)}`;
+  const serviceUrl = `${baseUrl}/api/auth/cas/callback`;
+  const casValidateUrl = `${config.casLoginUrl}/serviceValidate?ticket=${ticket}&service=${encodeURIComponent(serviceUrl)}`;
 
   const response = await fetch(casValidateUrl);
   
@@ -54,7 +61,7 @@ export async function GET(req) {
   const usernameMatch = text.match(/<cas:user>([^<]+)<\/cas:user>/);
   if (!usernameMatch) {
     console.log('❌ Aucun username trouvé dans la réponse CAS');
-    return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=casfail');
+    return NextResponse.redirect(`${baseUrl}/login?error=casfail`);
   }
   const username = usernameMatch[1];
   console.log('👤 Username extrait:', username);
@@ -85,7 +92,7 @@ export async function GET(req) {
   }
 
   // Création d'un cookie de session (simple, non sécurisé pour la prod)
-  const res = NextResponse.redirect('http://app.insa-lyon.fr:3001/dashboard');
+  const res = NextResponse.redirect(`${baseUrl}/dashboard`);
   
   res.cookies.set('user', username, { path: '/', httpOnly: false });
   
