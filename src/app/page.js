@@ -5,14 +5,12 @@ import { BookOpen, Brain, Mail } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
-            <div className="bg-blue-600 p-4 rounded-full">
-              <div className="text-white text-4xl">🦏</div>
-            </div>
+            <div className="text-6xl">🦏</div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
             Bienvenue sur <span className="text-blue-600">LeRhino</span>

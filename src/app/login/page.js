@@ -2,19 +2,55 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ExternalLink, User, Crown, GraduationCap, TestTube } from "lucide-react";
+import { Shield, ExternalLink, User, Crown, GraduationCap, TestTube, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+<<<<<<< HEAD
 import { config } from '@/config/app';
+=======
+import { useRouter } from "next/navigation";
+>>>>>>> dev
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
-  const { devLogin, loading } = useAuth();
+  const { user, devLogin, loading } = useAuth();
+  const router = useRouter();
+
+  // Redirection automatique si déjà connecté
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     const match = document.cookie.match(/(?:^|; )user=([^;]*)/);
     if (match) setUsername(decodeURIComponent(match[1]));
   }, []);
+
+  // Show loading while checking auth status
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Vérification de la connexion...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render login form if user is already logged in
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Redirection vers le tableau de bord...</span>
+        </div>
+      </div>
+    );
+  }
 
   const testProfiles = [
     {

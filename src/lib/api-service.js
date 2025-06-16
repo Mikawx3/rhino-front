@@ -1,138 +1,10 @@
 /**
- * 🦏 Service API Rhino - Client Frontend (Mode Statique)
- * Service centralisé pour toutes les interactions simulées avec l'API Rhino
+ * 🦏 Service API Rhino - Client Frontend (Mode Dynamique)
+ * Service centralisé pour toutes les interactions avec l'API Rhino
  */
 
-// Données statiques simulées
-const STATIC_MATIERES = [
-  {
-    name: "JAVASCRIPT",
-    description: "Programmation JavaScript moderne - ES6+ et frameworks",
-    document_count: 12,
-    created_at: "2024-01-15T10:00:00Z",
-    last_updated: "2024-01-20T15:30:00Z"
-  },
-  {
-    name: "PYTHON",
-    description: "Python pour la data science et développement web",
-    document_count: 8,
-    created_at: "2024-01-18T14:00:00Z",
-    last_updated: "2024-01-22T09:15:00Z"
-  },
-  {
-    name: "REACT",
-    description: "Développement d'applications React et écosystème",
-    document_count: 15,
-    created_at: "2024-01-10T11:30:00Z",
-    last_updated: "2024-01-25T16:45:00Z"
-  },
-  {
-    name: "VUE",
-    description: "Framework Vue.js pour applications front-end",
-    document_count: 6,
-    created_at: "2024-01-22T09:00:00Z",
-    last_updated: "2024-01-24T14:20:00Z"
-  },
-  {
-    name: "NODEJS",
-    description: "Développement backend avec Node.js et Express",
-    document_count: 10,
-    created_at: "2024-01-12T13:15:00Z",
-    last_updated: "2024-01-23T11:30:00Z"
-  }
-];
-
-const STATIC_CHALLENGES = {
-  today: {
-    id: 1,
-    title: "Challenge JavaScript du jour",
-    description: "Créez une fonction qui inverse un tableau sans utiliser reverse()",
-    matiere: "JAVASCRIPT",
-    difficulty: "medium",
-    points: 50,
-    deadline: "2024-01-26T23:59:59Z",
-    submissions: 23,
-    completion_rate: 0.78
-  },
-  list: [
-    {
-      id: 1,
-      title: "Challenge JavaScript du jour",
-      description: "Créez une fonction qui inverse un tableau sans utiliser reverse()",
-      matiere: "JAVASCRIPT",
-      difficulty: "medium",
-      points: 50,
-      created_at: "2024-01-26T00:00:00Z"
-    },
-    {
-      id: 2,
-      title: "Défi Python - Algorithmes",
-      description: "Implémentez un algorithme de tri rapide en Python",
-      matiere: "PYTHON",
-      difficulty: "hard",
-      points: 100,
-      created_at: "2024-01-25T00:00:00Z"
-    },
-    {
-      id: 3,
-      title: "React Components",
-      description: "Créez un composant React réutilisable avec hooks",
-      matiere: "REACT",
-      difficulty: "easy",
-      points: 30,
-      created_at: "2024-01-24T00:00:00Z"
-    }
-  ]
-};
-
-const STATIC_DOCUMENTS = {
-  "JAVASCRIPT": [
-    {
-      id: 1,
-      name: "Introduction à ES6+",
-      type: "pdf",
-      size: "2.3 MB",
-      uploaded_at: "2024-01-15T10:30:00Z",
-      description: "Guide complet des nouvelles fonctionnalités JavaScript"
-    },
-    {
-      id: 2,
-      name: "Async/Await vs Promises",
-      type: "md",
-      size: "156 KB",
-      uploaded_at: "2024-01-16T14:20:00Z",
-      description: "Comparaison et meilleures pratiques"
-    }
-  ],
-  "PYTHON": [
-    {
-      id: 3,
-      name: "Python pour la Data Science",
-      type: "pdf",
-      size: "4.1 MB",
-      uploaded_at: "2024-01-18T09:15:00Z",
-      description: "Pandas, NumPy et Matplotlib"
-    }
-  ],
-  "REACT": [
-    {
-      id: 4,
-      name: "React Hooks Guide",
-      type: "pdf",
-      size: "1.8 MB",
-      uploaded_at: "2024-01-10T16:00:00Z",
-      description: "Guide complet des hooks React"
-    },
-    {
-      id: 5,
-      name: "State Management avec Redux",
-      type: "md",
-      size: "892 KB",
-      uploaded_at: "2024-01-12T11:30:00Z",
-      description: "Gestion d'état avec Redux Toolkit"
-    }
-  ]
-};
+// Configuration de l'API
+const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
 
 class RhinoAPIService {
   constructor(userId = null) {
@@ -140,10 +12,129 @@ class RhinoAPIService {
   }
 
   /**
-   * Simuler un délai réseau
+   * Méthode helper pour faire des requêtes HTTP
    */
-  async simulateNetworkDelay(ms = 300) {
-    await new Promise(resolve => setTimeout(resolve, ms));
+  async makeRequest(endpoint, options = {}) {
+    if (!this.userId) {
+      throw new Error('User ID is required for API requests');
+    }
+
+    // Construire l'URL complète
+    const fullUrl = `${API_BASE_URL}${endpoint}`;
+    const url = new URL(fullUrl);
+    
+    // Ajouter le user_id seulement s'il n'est pas déjà présent
+    if (!url.searchParams.has('user_id')) {
+      url.searchParams.append('user_id', this.userId);
+    }
+
+    const defaultOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    const mergedOptions = {
+      ...defaultOptions,
+      ...options,
+      headers: {
+        ...defaultOptions.headers,
+        ...options.headers,
+      },
+    };
+
+    // console.log(`🌐 API Request: ${mergedOptions.method} ${url.toString()}`);
+
+    const response = await fetch(url.toString(), mergedOptions);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ HTTP ${response.status}:`, errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    // console.log(`✅ API Response:`, data);
+    
+    // Cas spéciaux : gérer les erreurs de "no data available" de façon gracieuse
+    if (!data.success) {
+      const errorMessage = data.message || 'API request failed';
+      
+      // Pour les challenges, ne pas lancer d'erreur si c'est juste "pas de challenge disponible"
+      if (endpoint.includes('/challenges') && (
+        errorMessage.includes('Aucun challenge disponible') ||
+        errorMessage.includes('No challenge available') ||
+        errorMessage.includes('pour vos abonnements')
+      )) {
+        console.log('ℹ️ No challenges available, returning empty response');
+        return { 
+          challenges: endpoint === '/challenges' ? [] : undefined,
+          challenge: endpoint === '/challenges/today' ? null : undefined
+        };
+      }
+      
+      // Pour toute autre erreur, la lancer normalement
+      throw new Error(errorMessage);
+    }
+    
+    return data.data;
+  }
+
+  // ============================================================================
+  // 👥 UTILISATEURS
+  // ============================================================================
+
+  /**
+   * Récupérer tous les utilisateurs
+   */
+  async getUsers() {
+    return await this.makeRequest('/users/');
+  }
+
+  /**
+   * Créer un nouvel utilisateur
+   */
+  async registerUser(userData) {
+    return await this.makeRequest('/users/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  /**
+   * Récupérer les abonnements d'un utilisateur
+   */
+  async getUserSubscriptions(userId) {
+    return await this.makeRequest('/users/subscriptions', {
+      method: 'PUT',
+      body: JSON.stringify({
+        user_id: userId,
+      }),
+    });
+  }
+
+  /**
+   * Mettre à jour les abonnements d'un utilisateur (ajouter ou retirer)
+   */
+  async updateUserSubscriptions(userId, subscriptions) {
+    return await this.makeRequest('/users/subscriptions', {
+      method: 'PUT',
+      body: JSON.stringify({
+        user_id: userId,
+        subscriptions: subscriptions,
+      }),
+    });
+  }
+
+  /**
+   * Mettre à jour les informations d'un utilisateur
+   */
+  async updateUserInfo(userId, userData) {
+    return await this.makeRequest(`/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
   }
 
   // ============================================================================
@@ -154,67 +145,47 @@ class RhinoAPIService {
    * Récupérer toutes les matières
    */
   async getMatieres() {
-    await this.simulateNetworkDelay();
-    return { matieres: STATIC_MATIERES };
+    try {
+      return await this.makeRequest('/matieres/');
+    } catch (error) {
+      // Si l'erreur indique qu'il n'y a pas de matières disponibles, retourner une liste vide
+      if (error.message && (
+        error.message.includes('Aucune matière') || 
+        error.message.includes('No subjects') ||
+        error.message.includes('matières disponibles')
+      )) {
+        console.log('ℹ️ No subjects available, returning empty list');
+        return { matieres: [] };
+      }
+      // Pour toute autre erreur, la relancer
+      throw error;
+    }
   }
 
   /**
    * Créer une nouvelle matière
    */
   async createMatiere(matiereData) {
-    await this.simulateNetworkDelay(500);
-    
-    const newMatiere = {
-      name: matiereData.name.toUpperCase(),
-      description: matiereData.description,
-      document_count: 0,
-      created_at: new Date().toISOString(),
-      last_updated: new Date().toISOString()
-    };
-    
-    // Ajouter à la liste statique (simulation)
-    STATIC_MATIERES.push(newMatiere);
-    
-    return { matiere: newMatiere };
+    return await this.makeRequest('/matieres/', {
+      method: 'POST',
+      body: JSON.stringify(matiereData),
+    });
   }
 
   /**
    * Récupérer les détails d'une matière
    */
   async getMatiereDetails(matiereName) {
-    await this.simulateNetworkDelay();
-    
-    const matiere = STATIC_MATIERES.find(m => m.name === matiereName.toUpperCase());
-    if (!matiere) {
-      throw new Error('Matière non trouvée');
-    }
-    
-    return { matiere };
+    return await this.makeRequest(`/matieres/${matiereName}`);
   }
 
   /**
    * Supprimer une matière
    */
   async deleteMatiere(matiereName) {
-    await this.simulateNetworkDelay(400);
-    
-    const index = STATIC_MATIERES.findIndex(m => m.name === matiereName.toUpperCase());
-    if (index === -1) {
-      throw new Error('Matière non trouvée');
-    }
-    
-    // Supprimer de la liste statique
-    STATIC_MATIERES.splice(index, 1);
-    
-    return { success: true };
-  }
-
-  /**
-   * Réindexer une matière
-   */
-  async reindexMatiere(matiereName) {
-    await this.simulateNetworkDelay(1000);
-    return { message: `Matière ${matiereName} réindexée avec succès` };
+    return await this.makeRequest(`/matieres/${matiereName}`, {
+      method: 'DELETE',
+    });
   }
 
   // ============================================================================
@@ -222,105 +193,151 @@ class RhinoAPIService {
   // ============================================================================
 
   /**
-   * Récupérer les documents d'une matière
+   * Récupérer tous les documents d'une matière
    */
   async getDocuments(matiere) {
-    await this.simulateNetworkDelay();
-    
-    const documents = STATIC_DOCUMENTS[matiere.toUpperCase()] || [];
-    return { documents };
+    try {
+      return await this.makeRequest(`/matieres/${matiere}/documents`);
+    } catch (error) {
+      // Si l'erreur indique qu'il n'y a pas de documents disponibles, retourner une liste vide
+      if (error.message && (
+        error.message.includes('Aucun document') || 
+        error.message.includes('No documents') ||
+        error.message.includes('documents disponibles') ||
+        error.message.includes('404')
+      )) {
+        console.log('ℹ️ No documents available for this subject, returning empty list');
+        return { documents: [] };
+      }
+      // Pour toute autre erreur, la relancer
+      throw error;
+    }
   }
 
   /**
-   * Uploader un document (simulation)
+   * Uploader un document
    */
-  async uploadDocument(matiere, file, description = '') {
-    await this.simulateNetworkDelay(1500);
+  async uploadDocument(matiere, file, isExam = false) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('is_exam', isExam);
     
-    const newDocument = {
-      id: Date.now(), // Simple ID simulation
-      name: file.name,
-      type: file.name.split('.').pop(),
-      size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-      uploaded_at: new Date().toISOString(),
-      description: description || `Document uploadé: ${file.name}`
-    };
+    const url = `${API_BASE_URL}/matieres/${matiere}/documents?user_id=${this.userId}`;
     
-    // Ajouter à la liste statique
-    if (!STATIC_DOCUMENTS[matiere.toUpperCase()]) {
-      STATIC_DOCUMENTS[matiere.toUpperCase()] = [];
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Upload failed');
+      }
+      
+      return data.data;
+    } catch (error) {
+      console.error('Document upload failed:', error);
+      throw error;
     }
-    STATIC_DOCUMENTS[matiere.toUpperCase()].push(newDocument);
-    
-    return { document: newDocument };
   }
 
   /**
    * Supprimer un document
    */
   async deleteDocument(matiere, documentId) {
-    await this.simulateNetworkDelay();
+    return await this.makeRequest(`/matieres/${matiere}/documents/${documentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Télécharger le contenu d'un document
+   */
+  async getDocumentContent(matiere, documentId) {
+    const url = `${API_BASE_URL}/matieres/${matiere}/documents/${documentId}/content?user_id=${this.userId}`;
     
-    const documents = STATIC_DOCUMENTS[matiere.toUpperCase()];
-    if (documents) {
-      const index = documents.findIndex(d => d.id === documentId);
-      if (index !== -1) {
-        documents.splice(index, 1);
+    try {
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
       }
+      
+      return response; // Retourne la réponse pour téléchargement
+    } catch (error) {
+      console.error('Document download failed:', error);
+      throw error;
     }
-    
-    return { success: true };
+  }
+
+  /**
+   * Réindexer les documents d'une matière
+   */
+  async reindexMatiere(matiereName) {
+    return await this.makeRequest(`/matieres/${matiereName}/documents/reindex`, {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Récupérer les changements de documents
+   */
+  async getDocumentChanges(matiere) {
+    return await this.makeRequest(`/matieres/${matiere}/documents/changes`);
   }
 
   // ============================================================================
-  // 🤖 IA & RAG
+  // ❓ QUESTIONS (RAG)
   // ============================================================================
 
   /**
-   * Poser une question au système RAG (simulation)
+   * Poser une question au système RAG
    */
-  async askQuestion(query, matiere, maxTokens = 500) {
-    await this.simulateNetworkDelay(2000);
-    
-    // Réponses simulées selon la matière
-    const simulatedResponses = {
-      JAVASCRIPT: `Voici une explication concernant "${query}" en JavaScript:\n\n• JavaScript est un langage interprété\n• Utilise le principe de hoisting\n• Support des fonctions fléchées depuis ES6\n\nPour plus de détails, consultez les documents disponibles.`,
-      PYTHON: `Concernant "${query}" en Python:\n\n• Python utilise l'indentation pour structurer le code\n• Syntaxe simple et lisible\n• Large écosystème de bibliothèques\n\nRéférez-vous aux ressources Python pour approfondir.`,
-      REACT: `À propos de "${query}" en React:\n\n• React utilise un DOM virtuel\n• Composants fonctionnels avec hooks\n• Gestion d'état moderne\n\nConsultez la documentation React pour plus d'exemples.`,
-      default: `Voici des informations sur "${query}":\n\nCette question nécessite une analyse plus approfondie. Je vous encourage à consulter les documents disponibles dans la matière concernée.`
-    };
-    
-    const response = simulatedResponses[matiere.toUpperCase()] || simulatedResponses.default;
-    
-    return {
-      response,
-      sources: [
-        { document: "Guide ES6+", relevance: 0.85 },
-        { document: "Best Practices", relevance: 0.72 }
-      ],
-      tokens_used: Math.min(maxTokens, response.length * 0.75)
-    };
+  async askQuestion(query, matiere) {
+    return await this.makeRequest('/question', {
+      method: 'POST',
+      body: JSON.stringify({
+        matiere: matiere,
+        query: query,
+      }),
+    });
   }
 
   /**
    * Générer une question de réflexion
    */
-  async generateReflectionQuestion(matiere) {
-    await this.simulateNetworkDelay(1500);
-    
-    const questions = {
-      JAVASCRIPT: "Expliquez la différence entre var, let et const en JavaScript et donnez des exemples d'utilisation appropriée pour chacun.",
-      PYTHON: "Décrivez les avantages de l'utilisation des list comprehensions en Python par rapport aux boucles traditionnelles.",
-      REACT: "Comment optimiseriez-vous les performances d'un composant React qui affiche une grande liste d'éléments ?",
-      VUE: "Expliquez le concept de réactivité dans Vue.js et comment il diffère des autres frameworks.",
-      NODEJS: "Quels sont les avantages et inconvénients de l'architecture événementielle de Node.js ?"
-    };
-    
-    return {
-      question: questions[matiere.toUpperCase()] || "Décrivez un concept important que vous avez appris récemment.",
-      context: `Question générée pour la matière ${matiere}`,
-      difficulty: "medium"
-    };
+  async generateReflectionQuestion(matiere, conceptCle = '') {
+    return await this.makeRequest('/question/reflection', {
+      method: 'POST',
+      body: JSON.stringify({
+        matiere: matiere,
+        concept_cle: conceptCle,
+      }),
+    });
+  }
+
+  // ============================================================================
+  // 📊 ÉVALUATIONS
+  // ============================================================================
+
+  /**
+   * Évaluer une réponse d'étudiant
+   */
+  async evaluateResponse(matiere, question, reponseEtudiant) {
+    return await this.makeRequest('/evaluation/response', {
+      method: 'POST',
+      body: JSON.stringify({
+        matiere: matiere,
+        question: question,
+        reponse_etudiant: reponseEtudiant,
+      }),
+    });
   }
 
   // ============================================================================
@@ -331,86 +348,152 @@ class RhinoAPIService {
    * Récupérer le challenge du jour
    */
   async getTodayChallenge() {
-    await this.simulateNetworkDelay();
-    return { challenge: STATIC_CHALLENGES.today };
+    const result = await this.makeRequest('/challenges/today');
+    return { challenge: result.challenge };
   }
 
   /**
-   * Récupérer la liste des challenges
+   * Récupérer tous les challenges
    */
   async getChallenges(matiere = null) {
-    await this.simulateNetworkDelay();
-    
-    let challenges = STATIC_CHALLENGES.list;
+    let endpoint = '/challenges';
     if (matiere) {
-      challenges = challenges.filter(c => c.matiere === matiere.toUpperCase());
+      endpoint += `?matiere=${matiere}`;
     }
-    
-    return { challenges };
+    const result = await this.makeRequest(endpoint);
+    return { challenges: result.challenges };
   }
 
   /**
    * Créer un nouveau challenge
    */
   async createChallenge(challengeData) {
-    await this.simulateNetworkDelay(800);
-    
-    const newChallenge = {
-      id: Date.now(),
-      title: challengeData.title,
-      description: challengeData.description,
-      matiere: challengeData.matiere.toUpperCase(),
-      difficulty: challengeData.difficulty || "medium",
-      points: challengeData.points || 50,
-      created_at: new Date().toISOString()
-    };
-    
-    STATIC_CHALLENGES.list.push(newChallenge);
-    
-    return { challenge: newChallenge };
+    return await this.makeRequest('/challenges', {
+      method: 'POST',
+      body: JSON.stringify(challengeData),
+    });
   }
 
   /**
-   * Soumettre une réponse au challenge
+   * Soumettre une réponse à un challenge
    */
   async submitChallengeResponse(challengeId, response) {
-    await this.simulateNetworkDelay(1200);
-    
-    // Simulation d'évaluation
-    const score = Math.floor(Math.random() * 100) + 1;
-    const feedback = score > 70 ? "Excellente réponse !" : score > 40 ? "Bonne tentative, quelques améliorations possibles." : "Continuez vos efforts !";
-    
-    return {
-      score,
-      feedback,
-      points_earned: Math.floor(score * 0.5),
-      rank: Math.floor(Math.random() * 10) + 1
-    };
+    return await this.makeRequest(`/challenges/${challengeId}/response`, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: this.userId.toString(),
+        response: response,
+      }),
+    });
+  }
+
+  /**
+   * Récupérer le leaderboard d'un challenge
+   */
+  async getChallengeLeaderboard(challengeId) {
+    return await this.makeRequest(`/challenges/${challengeId}/leaderboard`);
+  }
+
+  /**
+   * Récupérer le prochain challenge pour une matière
+   */
+  async getNextChallenge(matiere) {
+    return await this.makeRequest(`/challenges/next?matiere=${matiere}`);
   }
 
   // ============================================================================
-  // 👤 UTILISATEURS (simulation basique)
+  // 🏅 LEADERBOARD
   // ============================================================================
 
   /**
-   * Statistiques utilisateur
+   * Calculer le leaderboard
    */
-  async getUserStats(userId) {
-    await this.simulateNetworkDelay();
+  async calculateLeaderboard(matiere = null, limit = 10) {
+    return await this.makeRequest('/leaderboard/calcule', {
+      method: 'POST',
+      body: JSON.stringify({
+        matiere: matiere,
+        limit: limit,
+      }),
+    });
+  }
+
+  // ============================================================================
+  // 📈 STATS (Méthodes utilitaires)
+  // ============================================================================
+
+  /**
+   * Récupérer les statistiques d'un utilisateur
+   */
+  async getUserStats(userId = null) {
+    const targetUserId = userId || this.userId;
     
-    return {
-      stats: {
-        totalChallenges: Math.floor(Math.random() * 20) + 5,
-        completedChallenges: Math.floor(Math.random() * 15) + 3,
-        streak: Math.floor(Math.random() * 10) + 1,
-        totalPoints: Math.floor(Math.random() * 1000) + 200,
-        averageScore: Math.floor(Math.random() * 40) + 60
+    try {
+      // Récupérer différentes statistiques en parallèle
+      const [challenges, matieres] = await Promise.allSettled([
+        this.getChallenges(),
+        this.getMatieres(),
+      ]);
+      
+      const stats = {
+        totalChallenges: challenges.status === 'fulfilled' ? (challenges.value.challenges?.length || 0) : 0,
+        totalMatieres: matieres.status === 'fulfilled' ? (matieres.value.matieres?.length || 0) : 0,
+        lastActivity: new Date().toISOString(),
+      };
+      
+      return stats;
+    } catch (error) {
+      console.error('Failed to get user stats:', error);
+      return {
+        totalChallenges: 0,
+        totalMatieres: 0,
+        lastActivity: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * S'abonner à une matière
+   */
+  async subscribeToMatiere(matiereName) {
+    try {
+      // D'abord récupérer les abonnements actuels
+      const currentSubs = await this.getUserSubscriptions(this.userId);
+      const subscriptions = currentSubs.subscriptions || [];
+      
+      // Vérifier si déjà abonné
+      if (!subscriptions.includes(matiereName)) {
+        subscriptions.push(matiereName);
+        return await this.updateUserSubscriptions(this.userId, subscriptions);
       }
-    };
+      
+      return currentSubs; // Déjà abonné
+    } catch (error) {
+      console.error('Failed to subscribe to matiere:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Se désabonner d'une matière
+   */
+  async unsubscribeFromMatiere(matiereName) {
+    try {
+      // D'abord récupérer les abonnements actuels
+      const currentSubs = await this.getUserSubscriptions(this.userId);
+      const subscriptions = (currentSubs.subscriptions || []).filter(sub => sub !== matiereName);
+      
+      return await this.updateUserSubscriptions(this.userId, subscriptions);
+    } catch (error) {
+      console.error('Failed to unsubscribe from matiere:', error);
+      throw error;
+    }
   }
 }
 
-// Export du hook pour utiliser le service
+/**
+ * Hook React pour utiliser le service API
+ */
 export function useRhinoAPI(userId) {
   return new RhinoAPIService(userId);
 } 

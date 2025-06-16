@@ -1,7 +1,13 @@
 {
+<<<<<<< HEAD
   "timestamp": "2025-06-12T08:38:15.990Z",
   "ticket": "ST-228532-Pi64jZ3uDQ1VGKwbo3sT-dsi68",
   "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-228532-Pi64jZ3uDQ1VGKwbo3sT-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
+=======
+  "timestamp": "2025-06-16T13:25:22.037Z",
+  "ticket": "ST-244946-yUmPa4tTZjliDK0zhrF5-dsi68",
+  "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-244946-yUmPa4tTZjliDK0zhrF5-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
+>>>>>>> dev
   "responseStatus": 200,
   "responseHeaders": {
     "connection": "Keep-Alive",
@@ -10,7 +16,11 @@
     "content-length": "134",
     "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline';",
     "content-type": "application/xml;charset=UTF-8",
+<<<<<<< HEAD
     "date": "Thu, 12 Jun 2025 08:38:16 GMT",
+=======
+    "date": "Mon, 16 Jun 2025 13:25:22 GMT",
+>>>>>>> dev
     "keep-alive": "timeout=5, max=100",
     "server": "Apache",
     "vary": "Accept-Encoding",
@@ -18,6 +28,10 @@
     "x-robots-tag": "noindex, nofollow, noarchive"
   },
   "responseText": "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n    <cas:authenticationSuccess>\n        <cas:user>mounissi</cas:user>\n        </cas:authenticationSuccess>\n</cas:serviceResponse>\n",
+<<<<<<< HEAD
   "cookies": "__next_hmr_refresh_hash__=529; AGIMUS=TRACE-66721-73NmxRyQQbYJI0eefVbQuohWAiWycecmwc6KibGwPJxZVxP7bz-dsi68",
+=======
+  "cookies": "__next_hmr_refresh_hash__=205; AGIMUS=TRACE-72023-dPApyIOBjPzKbPuHQxOnVhk6onmKt2s1QfMbH4ApJHNltf3vd7-dsi68",
+>>>>>>> dev
   "response": {}
 }
