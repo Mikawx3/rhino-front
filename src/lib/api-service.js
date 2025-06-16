@@ -4,7 +4,7 @@
  */
 
 // Configuration de l'API
-const API_BASE_URL = 'http://app.insa-lyon.fr:8000/api';
+const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
 
 class RhinoAPIService {
   constructor(userId = null) {
@@ -44,7 +44,7 @@ class RhinoAPIService {
       },
     };
 
-    console.log(`🌐 API Request: ${mergedOptions.method} ${url.toString()}`);
+    // console.log(`🌐 API Request: ${mergedOptions.method} ${url.toString()}`);
 
     const response = await fetch(url.toString(), mergedOptions);
     
@@ -55,7 +55,7 @@ class RhinoAPIService {
     }
     
     const data = await response.json();
-    console.log(`✅ API Response:`, data);
+    // console.log(`✅ API Response:`, data);
     
     // Cas spéciaux : gérer les erreurs de "no data available" de façon gracieuse
     if (!data.success) {

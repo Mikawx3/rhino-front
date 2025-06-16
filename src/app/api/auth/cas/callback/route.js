@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Configuration de l'API (même que dans api-service.js)
-const API_BASE_URL = 'http://app.insa-lyon.fr:8000/api';
+const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);

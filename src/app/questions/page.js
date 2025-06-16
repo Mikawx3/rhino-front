@@ -274,8 +274,8 @@ export default function QuestionsPage() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {/* Poser une question */}
+      <div className="grid md:grid-cols-1 gap-6 mb-8">
+        {/* Poser une question
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -314,7 +314,7 @@ export default function QuestionsPage() {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Générer une question de réflexion */}
         <Card>

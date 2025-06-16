@@ -110,18 +110,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const getCasUserSubscriptions = (role) => {
-    switch (role) {
-      case 'admin':
-        return ['*']; // Accès complet
-      case 'teacher':
-        return ['JAVASCRIPT', 'PYTHON', 'REACT', 'VUE', 'NODEJS'];
-      case 'student':
-      default:
-        return ['JAVASCRIPT', 'PYTHON', 'REACT'];
-    }
-  };
-
   const checkSession = async () => {
     try {
       setLoading(true);
@@ -148,7 +136,7 @@ export function AuthProvider({ children }) {
         
         // Utiliser le rôle du cookie ou déterminer automatiquement
         const role = casUserRole || determineCasUserRole(casUsername);
-        const subscriptions = getCasUserSubscriptions(role);
+        
         
         // Créer un profil pour l'utilisateur CAS avec l'ID numérique du backend
         const casProfile = {
@@ -156,7 +144,7 @@ export function AuthProvider({ children }) {
           username: casUsername,
           email: `${casUsername}@insa-lyon.fr`,
           role: role,
-          subscriptions: subscriptions,
+          subscriptions: await loadUserSubscriptions(numericUserId),
           avatar: null,
           created_at: new Date().toISOString(),
           stats: {

@@ -22,7 +22,8 @@ import {
   Loader2,
   BookOpen,
   Flame,
-  UserPlus
+  UserPlus,
+  MessageSquare
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRhinoAPI } from "@/lib/api-service";
@@ -57,6 +58,10 @@ export default function ChallengesPage() {
   const [challengeResponse, setChallengeResponse] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState(null);
+  
+  // États pour les popups de confirmation
+  const [showCreateSuccess, setShowCreateSuccess] = useState(false);
+  const [createdChallengeName, setCreatedChallengeName] = useState("");
 
   useEffect(() => {
     if (user?.id) {
@@ -141,6 +146,10 @@ export default function ChallengesPage() {
       const response = await apiService.getChallenges();
       setChallenges(response.challenges || []);
       
+      // Afficher la popup de succès
+      setCreatedChallengeName(`Challenge ${newChallenge.matiere}`);
+      setShowCreateSuccess(true);
+      
       setNewChallenge({ matiere: "", question: "" });
       setShowCreateForm(false);
       
@@ -152,8 +161,8 @@ export default function ChallengesPage() {
     }
   };
 
-  const handleSubmitResponse = async () => {
-    if (!selectedChallenge || !challengeResponse.trim()) {
+  const handleSubmitResponse = async (challenge = selectedChallenge) => {
+    if (!challenge || !challengeResponse.trim()) {
       setError('Veuillez rédiger une réponse');
       return;
     }
@@ -162,8 +171,9 @@ export default function ChallengesPage() {
       setIsSubmitting(true);
       setError(null);
       
-      const result = await apiService.submitChallengeResponse(
-        selectedChallenge.id, 
+      const result = await apiService.evaluateResponse(
+        challenge.matiere, 
+        challenge.question,
         challengeResponse
       );
       
@@ -278,7 +288,7 @@ export default function ChallengesPage() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-          <Trophy className="h-8 w-8 mr-3 text-yellow-500" />
+          
           Challenges
         </h1>
         <p className="text-gray-600">
@@ -392,8 +402,7 @@ export default function ChallengesPage() {
                     
                     <Button
                       onClick={() => {
-                        setSelectedChallenge(todayChallenge);
-                        handleSubmitResponse();
+                        handleSubmitResponse(todayChallenge);
                       }}
                       disabled={!challengeResponse.trim() || isSubmitting}
                       className="w-full"
@@ -413,24 +422,93 @@ export default function ChallengesPage() {
                   </div>
                   
                   {submissionResult && (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <h4 className="font-medium text-green-900 mb-2 flex items-center">
-                        <Award className="h-5 w-5 mr-2" />
-                        Réponse soumise !
-                      </h4>
-                      <div className="text-green-800 space-y-1">
-                        {submissionResult.score && (
-                          <p>Score : {submissionResult.score}/100</p>
-                        )}
-                        {submissionResult.points_earned && (
-                          <p>Points gagnés : {submissionResult.points_earned}</p>
-                        )}
+                    <div className="relative overflow-hidden p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+                      {/* Decorative background */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full -translate-y-16 translate-x-16 opacity-30"></div>
+                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-100 rounded-full translate-y-12 -translate-x-12 opacity-40"></div>
+                      
+                      <div className="relative">
+                        <div className="flex items-center mb-4">
+                          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4 animate-pulse">
+                            <Award className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="text-xl font-bold text-green-900 mb-1">
+                              Réponse soumise avec succès !
+                            </h4>
+                            <p className="text-green-700 text-sm">
+                              Voici votre évaluation détaillée
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          {submissionResult.score !== undefined && (
+                            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-green-800">Score obtenu</span>
+                                <Star className="h-4 w-4 text-yellow-500" />
+                              </div>
+                              <div className="flex items-baseline">
+                                <span className="text-3xl font-bold text-green-900">{submissionResult.score}</span>
+                                <span className="text-lg text-green-700 ml-1">/100</span>
+                              </div>
+                              <div className="w-full bg-green-200 rounded-full h-2 mt-2">
+                                <div 
+                                  className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                                  style={{ width: `${submissionResult.score}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {submissionResult.points_earned !== undefined && (
+                            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-green-800">Points gagnés</span>
+                                <Trophy className="h-4 w-4 text-yellow-500" />
+                              </div>
+                              <div className="flex items-baseline">
+                                <span className="text-3xl font-bold text-green-900">+{submissionResult.points_earned}</span>
+                                <span className="text-sm text-green-700 ml-1">pts</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {submissionResult.rank !== undefined && (
+                            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50 md:col-span-2">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-green-800">Votre classement</span>
+                                <Award className="h-4 w-4 text-yellow-500" />
+                              </div>
+                              <div className="flex items-center">
+                                <span className="text-2xl font-bold text-green-900">#{submissionResult.rank}</span>
+                                <span className="text-sm text-green-700 ml-2">position</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
                         {submissionResult.feedback && (
-                          <p>Feedback : {submissionResult.feedback}</p>
+                          <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50">
+                            <div className="flex items-center mb-3">
+                              <MessageSquare className="h-5 w-5 text-green-600 mr-2" />
+                              <span className="font-medium text-green-800">Feedback de l'IA</span>
+                            </div>
+                            <p className="text-green-700 leading-relaxed whitespace-pre-wrap">
+                              {submissionResult.feedback}
+                            </p>
+                          </div>
                         )}
-                        {submissionResult.rank && (
-                          <p>Classement : #{submissionResult.rank}</p>
-                        )}
+                        
+                        <div className="flex justify-center mt-6">
+                          <Button 
+                            onClick={() => setSubmissionResult(null)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                          >
+                            Continuer
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -709,12 +787,35 @@ export default function ChallengesPage() {
       </Tabs>
 
       {selectedChallenge && selectedChallenge !== todayChallenge && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedChallenge(null);
+              setChallengeResponse("");
+              setSubmissionResult(null);
+            }
+          }}
+        >
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl border-2">
             <CardHeader>
-              <CardTitle>
-                {selectedChallenge.title || `Challenge ${selectedChallenge.matiere}`}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  {selectedChallenge.title || `Challenge ${selectedChallenge.matiere}`}
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedChallenge(null);
+                    setChallengeResponse("");
+                    setSubmissionResult(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </Button>
+              </div>
               <CardDescription>
                 Rédigez votre réponse à ce challenge
               </CardDescription>
@@ -736,7 +837,7 @@ export default function ChallengesPage() {
                 
                 <div className="flex space-x-2">
                   <Button
-                    onClick={handleSubmitResponse}
+                    onClick={() => handleSubmitResponse(selectedChallenge)}
                     disabled={!challengeResponse.trim() || isSubmitting}
                     className="flex-1"
                   >
@@ -752,41 +853,156 @@ export default function ChallengesPage() {
                       </>
                     )}
                   </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedChallenge(null);
-                      setChallengeResponse("");
-                      setSubmissionResult(null);
-                    }}
-                  >
-                    Annuler
-                  </Button>
                 </div>
                 
                 {submissionResult && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 className="font-medium text-green-900 mb-2 flex items-center">
-                      <Award className="h-5 w-5 mr-2" />
-                      Réponse soumise !
-                    </h4>
-                    <div className="text-green-800 space-y-1">
-                      {submissionResult.score && (
-                        <p>Score : {submissionResult.score}/100</p>
-                      )}
-                      {submissionResult.points_earned && (
-                        <p>Points gagnés : {submissionResult.points_earned}</p>
-                      )}
+                  <div className="relative overflow-hidden p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+                    {/* Decorative background */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full -translate-y-16 translate-x-16 opacity-30"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-100 rounded-full translate-y-12 -translate-x-12 opacity-40"></div>
+                    
+                    <div className="relative">
+                      <div className="flex items-center mb-4">
+                        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4 animate-pulse">
+                          <Award className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-bold text-green-900 mb-1">
+                            Réponse soumise avec succès !
+                          </h4>
+                          <p className="text-green-700 text-sm">
+                            Voici votre évaluation détaillée
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        {submissionResult.score !== undefined && (
+                          <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-green-800">Score obtenu</span>
+                              <Star className="h-4 w-4 text-yellow-500" />
+                            </div>
+                            <div className="flex items-baseline">
+                              <span className="text-3xl font-bold text-green-900">{submissionResult.score}</span>
+                              <span className="text-lg text-green-700 ml-1">/100</span>
+                            </div>
+                            <div className="w-full bg-green-200 rounded-full h-2 mt-2">
+                              <div 
+                                className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                                style={{ width: `${submissionResult.score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {submissionResult.points_earned !== undefined && (
+                          <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-green-800">Points gagnés</span>
+                              <Trophy className="h-4 w-4 text-yellow-500" />
+                            </div>
+                            <div className="flex items-baseline">
+                              <span className="text-3xl font-bold text-green-900">+{submissionResult.points_earned}</span>
+                              <span className="text-sm text-green-700 ml-1">pts</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {submissionResult.rank !== undefined && (
+                          <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50 md:col-span-2">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-green-800">Votre classement</span>
+                              <Award className="h-4 w-4 text-yellow-500" />
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-2xl font-bold text-green-900">#{submissionResult.rank}</span>
+                              <span className="text-sm text-green-700 ml-2">position</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
                       {submissionResult.feedback && (
-                        <p>Feedback : {submissionResult.feedback}</p>
+                        <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-green-200/50">
+                          <div className="flex items-center mb-3">
+                            <MessageSquare className="h-5 w-5 text-green-600 mr-2" />
+                            <span className="font-medium text-green-800">Feedback de l'IA</span>
+                          </div>
+                          <p className="text-green-700 leading-relaxed whitespace-pre-wrap">
+                            {submissionResult.feedback}
+                          </p>
+                        </div>
                       )}
-                      {submissionResult.rank && (
-                        <p>Classement : #{submissionResult.rank}</p>
-                      )}
+                      
+                      <div className="flex justify-center mt-6">
+                        <Button 
+                          onClick={() => setSubmissionResult(null)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                        >
+                          Continuer
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {showCreateSuccess && (
+        <div 
+          className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCreateSuccess(false);
+              setCreatedChallengeName("");
+            }
+          }}
+        >
+          <Card className="w-full max-w-md transform animate-in zoom-in-95 duration-300 shadow-xl border-2">
+            <CardContent className="p-6">
+              <div className="text-center">
+                {/* Animated success icon */}
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                  <Trophy className="h-8 w-8 text-white" />
+                </div>
+                
+                {/* Success message */}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  🎉 Challenge créé !
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  <span className="font-medium text-green-600">{createdChallengeName}</span> a été créé avec succès et est maintenant disponible pour tous les étudiants !
+                </p>
+                
+                {/* Action buttons */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => {
+                      setShowCreateSuccess(false);
+                      setCreatedChallengeName("");
+                    }}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    Parfait !
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowCreateSuccess(false);
+                      setCreatedChallengeName("");
+                      setShowCreateForm(true);
+                    }}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer un autre challenge
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

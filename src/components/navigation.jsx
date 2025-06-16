@@ -30,7 +30,7 @@ export default function Navigation() {
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/questions", label: "Questions", icon: MessageSquare },
     { href: "/challenges", label: "Challenges", icon: Trophy },
-    { href: "/profile", label: "Profil", icon: User }
+    // { href: "/profile", label: "Profil", icon: User }
   ];
 
   const handleLogout = async () => {

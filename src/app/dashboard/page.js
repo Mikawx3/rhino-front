@@ -127,7 +127,6 @@ export default function DashboardPage() {
 
       // Recharger toutes les données du dashboard
       await loadDashboardData();
-      loadUserSubscriptionsFromAPI();
       
       // Réinitialiser le formulaire
       setNewMatiere({ name: "", description: "" });
@@ -312,7 +311,7 @@ export default function DashboardPage() {
               Challenge du jour
             </CardTitle>
             <CardDescription>
-              {todayChallenge.matiere} • {todayChallenge.points || 50} points
+              {todayChallenge.matiere}
             </CardDescription>
           </CardHeader>
           <CardContent>
