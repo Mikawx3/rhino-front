@@ -33,7 +33,7 @@ export default function Home() {
 
       // Helper function to make API requests (similar to CAS callback)
       const makeAPIRequest = async (endpoint, options = {}) => {
-        const url = `http://app.insa-lyon.fr:8888/api${endpoint}`;
+        const url = `http://localhost:8888/api${endpoint}`;
         const defaultOptions = {
           headers: {
             'Content-Type': 'application/json',

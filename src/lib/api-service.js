@@ -4,7 +4,7 @@
  */
 
 // Configuration de l'API
-const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
+const API_BASE_URL = 'http://localhost:8888/api';
 
 class RhinoAPIService {
   constructor(userId = null) {
