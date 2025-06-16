@@ -94,7 +94,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
         {/* Section de test temporaire - EN TÊTE */}
-        <Card className="border-orange-200 bg-orange-50">
+        {/* <Card className="border-orange-200 bg-orange-50">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center text-orange-800">
               <TestTube className="h-5 w-5 mr-2" />
@@ -131,7 +131,7 @@ export default function LoginPage() {
               </Link>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Connexion CAS réelle */}
         <Card className="shadow-lg">

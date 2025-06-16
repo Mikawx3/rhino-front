@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "timestamp": "2025-06-12T08:38:15.990Z",
   "ticket": "ST-228532-Pi64jZ3uDQ1VGKwbo3sT-dsi68",
   "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-228532-Pi64jZ3uDQ1VGKwbo3sT-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
@@ -7,6 +8,11 @@
   "timestamp": "2025-06-16T13:25:22.037Z",
   "ticket": "ST-244946-yUmPa4tTZjliDK0zhrF5-dsi68",
   "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-244946-yUmPa4tTZjliDK0zhrF5-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
+>>>>>>> dev
+=======
+  "timestamp": "2025-06-16T13:33:09.695Z",
+  "ticket": "ST-244987-uunEhYVeTSw2foXcJnp6-dsi68",
+  "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-244987-uunEhYVeTSw2foXcJnp6-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
 >>>>>>> dev
   "responseStatus": 200,
   "responseHeaders": {
@@ -17,9 +23,13 @@
     "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline';",
     "content-type": "application/xml;charset=UTF-8",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "date": "Thu, 12 Jun 2025 08:38:16 GMT",
 =======
     "date": "Mon, 16 Jun 2025 13:25:22 GMT",
+>>>>>>> dev
+=======
+    "date": "Mon, 16 Jun 2025 13:33:09 GMT",
 >>>>>>> dev
     "keep-alive": "timeout=5, max=100",
     "server": "Apache",
@@ -29,9 +39,13 @@
   },
   "responseText": "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n    <cas:authenticationSuccess>\n        <cas:user>mounissi</cas:user>\n        </cas:authenticationSuccess>\n</cas:serviceResponse>\n",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "cookies": "__next_hmr_refresh_hash__=529; AGIMUS=TRACE-66721-73NmxRyQQbYJI0eefVbQuohWAiWycecmwc6KibGwPJxZVxP7bz-dsi68",
 =======
   "cookies": "__next_hmr_refresh_hash__=205; AGIMUS=TRACE-72023-dPApyIOBjPzKbPuHQxOnVhk6onmKt2s1QfMbH4ApJHNltf3vd7-dsi68",
+>>>>>>> dev
+=======
+  "cookies": "__next_hmr_refresh_hash__=364; AGIMUS=TRACE-72035-2WY9jDA14hZmigBBegVdSvHRB4zD3NAVBYOBdc4oxFl0DVh2TM-dsi68",
 >>>>>>> dev
   "response": {}
 }
