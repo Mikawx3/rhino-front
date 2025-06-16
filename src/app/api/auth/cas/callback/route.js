@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+// Configuration de l'API (même que dans api-service.js)
+const API_BASE_URL = 'http://app.insa-lyon.fr:8000/api';
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const ticket = searchParams.get('ticket');
@@ -53,21 +56,52 @@ export async function GET(req) {
   const username = usernameMatch[1];
   console.log('👤 Username extrait:', username);
 
-  // Déclaration des variables en dehors du bloc try
+  // Helper function to make API requests
+  const makeAPIRequest = async (endpoint, options = {}) => {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const defaultOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    
+    try {
+      const response = await fetch(url, { ...defaultOptions, ...options });
+      
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'API request failed');
+      }
+      
+      return data.data;
+    } catch (error) {
+      console.error(`API Request failed for ${url}:`, error);
+      throw error;
+    }
+  };
+
+  // Déclaration des variables
   let userExists = false;
   let userId = null;
+  let userRole = 'student'; // Rôle par défaut
 
   // Vérification/création de l'utilisateur via l'API
   try {
     // D'abord, vérifier si l'utilisateur existe déjà
-    const usersResponse = await fetch('http://app.insa-lyon.fr:8000/api/users/');
-    const usersData = await usersResponse.json();
+    console.log('🔍 Checking if user exists...');
+    const usersData = await makeAPIRequest('/users/');
     
-    if (usersData.success && usersData.data && usersData.data.users) {
-      const existingUser = usersData.data.users.find(user => user.username === username);
+    if (usersData && usersData.users) {
+      const existingUser = usersData.users.find(user => user.username === username);
       if (existingUser) {
         userExists = true;
         userId = existingUser.id;
+        userRole = existingUser.role || 'student';
         console.log('✅ Utilisateur existant trouvé:', existingUser);
       }
     }
@@ -76,30 +110,34 @@ export async function GET(req) {
     if (!userExists) {
       console.log('🆕 Création d\'un nouvel utilisateur:', username);
       
-      const registerResponse = await fetch('http://app.insa-lyon.fr:8000/api/users/register', {
+      // Déterminer le rôle basé sur le username
+      if (username.includes('admin') || username.includes('prof') || username.startsWith('p')) {
+        userRole = 'admin';
+      } else if (username.includes('teacher') || username.includes('enseignant')) {
+        userRole = 'teacher';
+      } else {
+        userRole = 'student';
+      }
+      
+      const registerData = await makeAPIRequest('/users/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           username: username,
           email: `${username}@insa-lyon.fr`, // Email généré basé sur le username
-          role: 'student', // Rôle par défaut
+          role: userRole,
           subscriptions: []
         })
       });
       
-      const registerData = await registerResponse.json();
-      
-      if (registerData.success) {
-        userId = registerData.data.user_id;
-        console.log('✅ Utilisateur créé avec succès, ID:', userId);
+      if (registerData && registerData.user_id) {
+        userId = registerData.user_id;
+        console.log('✅ Utilisateur créé avec succès, ID:', userId, 'Role:', userRole);
       } else {
-        console.error('❌ Erreur lors de la création de l\'utilisateur:', registerData);
+        console.error('❌ Erreur: pas d\'user_id dans la réponse:', registerData);
         return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=usercreation');
       }
     } else {
-      console.log('✅ Utilisateur existant, ID:', userId);
+      console.log('✅ Utilisateur existant, ID:', userId, 'Role:', userRole);
     }
     
   } catch (error) {
@@ -107,11 +145,21 @@ export async function GET(req) {
     return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=apierror');
   }
 
-  // Création d'un cookie de session
+  // Validation finale
+  if (!userId) {
+    console.error('❌ Erreur: Aucun userId obtenu');
+    return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=nouserid');
+  }
+
+  // Création de cookies de session avec toutes les infos nécessaires
   const res = NextResponse.redirect('http://app.insa-lyon.fr:3001/dashboard');
   
+  // Cookies avec les informations utilisateur
   res.cookies.set('user', username, { path: '/', httpOnly: false });
   res.cookies.set('user_id', userId.toString(), { path: '/', httpOnly: false });
+  res.cookies.set('user_role', userRole, { path: '/', httpOnly: false });
+  
+  console.log('🍪 Cookies créés - user:', username, 'user_id:', userId, 'user_role:', userRole);
   
   return res;
 } 

@@ -82,6 +82,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(false);
 
   // Vérifier la session au chargement (mode statique + CAS)
   useEffect(() => {
@@ -124,19 +126,33 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       
-      // 1. Vérifier d'abord le cookie CAS 'user'
+      // 1. Vérifier d'abord les cookies CAS
       const casUsername = getCookie('user');
-      console.log(casUsername);
+      const casUserId = getCookie('user_id');
+      const casUserRole = getCookie('user_role');
+      console.log('CAS Cookies - Username:', casUsername, 'User ID:', casUserId, 'Role:', casUserRole);
       
       
-      if (casUsername) {
-        // Déterminer le rôle automatiquement
-        const role = determineCasUserRole(casUsername);
+      if (casUsername && casUserId) {
+        // Convertir l'ID en nombre
+        const numericUserId = parseInt(casUserId);
+        if (isNaN(numericUserId)) {
+          console.error('❌ Invalid user ID from cookie:', casUserId);
+          // Nettoyer les cookies invalides
+          document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          document.cookie = 'user_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          setUser(null);
+          return;
+        }
+        
+        // Utiliser le rôle du cookie ou déterminer automatiquement
+        const role = casUserRole || determineCasUserRole(casUsername);
         const subscriptions = getCasUserSubscriptions(role);
         
-        // Créer un profil pour l'utilisateur CAS
+        // Créer un profil pour l'utilisateur CAS avec l'ID numérique du backend
         const casProfile = {
-          id: `cas_${casUsername}`,
+          id: numericUserId, // ID numérique retourné par l'API backend
           username: casUsername,
           email: `${casUsername}@insa-lyon.fr`,
           role: role,
@@ -151,6 +167,7 @@ export function AuthProvider({ children }) {
           isCasUser: true // Marquer comme utilisateur CAS
         };
         
+        console.log('✅ CAS User Profile created:', casProfile);
         setUser(casProfile);
         setError(null);
         return;
@@ -165,6 +182,7 @@ export function AuthProvider({ children }) {
         
         const profile = STATIC_PROFILES.find(p => p.id.toString() === storedUserId);
         if (profile) {
+          console.log('✅ Test User Profile loaded:', profile);
           setUser(profile);
         }
       }
@@ -223,17 +241,26 @@ export function AuthProvider({ children }) {
     const isCurrentlyCasUser = user?.isCasUser;
     
     setUser(null);
+    setSubscriptions([]);
     localStorage.removeItem('rhino_static_user_id');
     
-    // Supprimer le cookie CAS si il existe
+    // Supprimer tous les cookies CAS s'ils existent
     if (getCookie('user')) {
       document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+    if (getCookie('user_id')) {
+      document.cookie = 'user_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+    if (getCookie('user_role')) {
+      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     }
     
     // Si c'était un utilisateur CAS, rediriger vers la déconnexion CAS complète
     if (isCurrentlyCasUser) {
       logoutCAS();
     }
+    
+    setError(null);
   };
 
   const logoutCAS = () => {
@@ -245,6 +272,147 @@ export function AuthProvider({ children }) {
     window.location.href = `${casLogoutUrl}?service=${serviceUrl}`;
   };
 
+  // ============================================================================
+  // 📋 GESTION DES ABONNEMENTS CENTRALISÉE
+  // ============================================================================
+
+  /**
+   * Charger les abonnements de l'utilisateur depuis l'API
+   */
+  const loadUserSubscriptions = async (userId) => {
+    if (!userId) return;
+    
+    try {
+      setSubscriptionsLoading(true);
+      
+      // Dynamiquement importer le service API pour éviter les dépendances circulaires
+      const { useRhinoAPI } = await import('@/lib/api-service');
+      const apiService = useRhinoAPI(userId);
+      
+      const response = await apiService.getUserSubscriptions(userId);
+      const userSubs = response.subscriptions || [];
+      
+      setSubscriptions(userSubs);
+      console.log('✅ Abonnements chargés:', userSubs);
+      
+      return userSubs;
+    } catch (err) {
+      console.error('Failed to load subscriptions:', err);
+      // En cas d'erreur, utiliser les abonnements du profil utilisateur
+      const fallbackSubs = user?.subscriptions || [];
+      setSubscriptions(fallbackSubs);
+      return fallbackSubs;
+    } finally {
+      setSubscriptionsLoading(false);
+    }
+  };
+
+  /**
+   * S'abonner à une matière
+   */
+  const subscribeToSubject = async (subjectName) => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      setSubscriptionsLoading(true);
+      
+      const { useRhinoAPI } = await import('@/lib/api-service');
+      const apiService = useRhinoAPI(user.id);
+      
+      await apiService.subscribeToMatiere(subjectName);
+      
+      // Mettre à jour l'état local
+      setSubscriptions(prev => {
+        if (!prev.includes(subjectName)) {
+          return [...prev, subjectName];
+        }
+        return prev;
+      });
+      
+      console.log('✅ Abonné à:', subjectName);
+    } catch (err) {
+      console.error('Failed to subscribe:', err);
+      throw err;
+    } finally {
+      setSubscriptionsLoading(false);
+    }
+  };
+
+  /**
+   * Se désabonner d'une matière
+   */
+  const unsubscribeFromSubject = async (subjectName) => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      setSubscriptionsLoading(true);
+      
+      const { useRhinoAPI } = await import('@/lib/api-service');
+      const apiService = useRhinoAPI(user.id);
+      
+      await apiService.unsubscribeFromMatiere(subjectName);
+      
+      // Mettre à jour l'état local
+      setSubscriptions(prev => prev.filter(sub => sub !== subjectName));
+      
+      console.log('✅ Désabonné de:', subjectName);
+    } catch (err) {
+      console.error('Failed to unsubscribe:', err);
+      throw err;
+    } finally {
+      setSubscriptionsLoading(false);
+    }
+  };
+
+  /**
+   * Filtrer les matières selon les abonnements de l'utilisateur
+   */
+  const filterSubjectsBySubscriptions = (allSubjects) => {
+    // Si admin, accès à tout
+    if (user?.role === 'admin' || subscriptions.includes('*')) {
+      return allSubjects;
+    }
+    
+    // Si pas d'abonnements, retourner liste vide pour forcer l'utilisateur à s'abonner
+    if (subscriptions.length === 0) {
+      return [];
+    }
+    
+    // Filtrer selon les abonnements
+    return allSubjects.filter(subject => {
+      const subjectId = subject.name || subject;
+      return subscriptions.includes(subjectId);
+    });
+  };
+
+  /**
+   * Vérifier si l'utilisateur est abonné à une matière
+   */
+  const isSubscribedTo = (subjectName) => {
+    return user?.role === 'admin' || 
+           subscriptions.includes('*') || 
+           subscriptions.includes(subjectName);
+  };
+
+  // Charger les abonnements quand l'utilisateur change
+  useEffect(() => {
+    if (user?.id) {
+      // Pour les utilisateurs CAS, utiliser les abonnements du profil
+      if (user.isCasUser) {
+        setSubscriptions(user.subscriptions || []);
+      } else {
+        // Pour les autres, charger depuis l'API
+        loadUserSubscriptions(user.id);
+      }
+    } else if (!user) {
+      setSubscriptions([]);
+    }
+  }, [user?.id]);
+
   const value = {
     user,
     loading,
@@ -255,7 +423,14 @@ export function AuthProvider({ children }) {
     logoutCAS,
     checkSession,
     // Exposer les profils disponibles
-    availableProfiles: STATIC_PROFILES
+    availableProfiles: STATIC_PROFILES,
+    subscriptions,
+    subscriptionsLoading,
+    loadUserSubscriptions,
+    subscribeToSubject,
+    unsubscribeFromSubject,
+    filterSubjectsBySubscriptions,
+    isSubscribedTo
   };
 
   return (

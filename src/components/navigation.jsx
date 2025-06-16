@@ -4,7 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, LayoutDashboard, LogIn, LogOut, Loader2, University } from "lucide-react";
+import { 
+  User, 
+  LayoutDashboard, 
+  LogIn, 
+  LogOut, 
+  Loader2, 
+  University,
+  MessageSquare,
+  Trophy,
+  BookOpen
+} from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,6 +28,8 @@ export default function Navigation() {
 
   const authenticatedNavItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/questions", label: "Questions", icon: MessageSquare },
+    { href: "/challenges", label: "Challenges", icon: Trophy },
     { href: "/profile", label: "Profil", icon: User }
   ];
 

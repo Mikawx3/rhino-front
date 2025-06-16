@@ -1,7 +1,7 @@
 {
-  "timestamp": "2025-06-13T14:10:59.904Z",
-  "ticket": "ST-235881-oNQ5c9OVVxFuChPQC1Ue-dsi68",
-  "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-235881-oNQ5c9OVVxFuChPQC1Ue-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
+  "timestamp": "2025-06-16T10:01:34.339Z",
+  "ticket": "ST-243709-aqTY9v7MeKFgupyf6WWm-dsi68",
+  "validationUrl": "https://login.insa-lyon.fr/cas/serviceValidate?ticket=ST-243709-aqTY9v7MeKFgupyf6WWm-dsi68&service=http%3A%2F%2Fapp.insa-lyon.fr%3A3001%2Fapi%2Fauth%2Fcas%2Fcallback",
   "responseStatus": 200,
   "responseHeaders": {
     "connection": "Keep-Alive",
@@ -10,14 +10,14 @@
     "content-length": "134",
     "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline';",
     "content-type": "application/xml;charset=UTF-8",
-    "date": "Fri, 13 Jun 2025 14:10:59 GMT",
+    "date": "Mon, 16 Jun 2025 10:01:34 GMT",
     "keep-alive": "timeout=5, max=100",
     "server": "Apache",
     "vary": "Accept-Encoding",
     "x-content-type-options": "nosniff",
     "x-robots-tag": "noindex, nofollow, noarchive"
   },
-  "responseText": "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n    <cas:authenticationSuccess>\n        <cas:user>mounissi</cas:user>\n        </cas:authenticationSuccess>\n</cas:serviceResponse>\n",
-  "cookies": "AGIMUS=TRACE-69060-nI7nODc2H9UpSZHYz9ryQwGgmzFDeeME01JcEoQRqlyKmq7wUD-dsi68",
+  "responseText": "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n    <cas:authenticationSuccess>\n        <cas:user>tmahamatsa</cas:user>\n        </cas:authenticationSuccess>\n</cas:serviceResponse>\n",
+  "cookies": "__next_hmr_refresh_hash__=20; AGIMUS=TRACE-71618-i3oQe06adqHD4hsRDLWHU1SpqZIHzeJbARuEKIBPfvhzkBujXN-dsi68",
   "response": {}
 }
