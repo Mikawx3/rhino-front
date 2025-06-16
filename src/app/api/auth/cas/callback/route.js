@@ -158,13 +158,10 @@ export async function GET(req) {
     return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=nouserid');
   }
 
-<<<<<<< HEAD
-  // Création d'un cookie de session (simple, non sécurisé pour la prod)
-  const res = NextResponse.redirect(`${baseUrl}/dashboard`);
-=======
+
   // Création de cookies de session avec toutes les infos nécessaires
   const res = NextResponse.redirect('http://app.insa-lyon.fr:3001/dashboard');
->>>>>>> dev
+
   
   // Cookies avec les informations utilisateur
   res.cookies.set('user', username, { path: '/', httpOnly: false });
