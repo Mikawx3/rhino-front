@@ -5,11 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, ExternalLink, User, Crown, GraduationCap, TestTube, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-<<<<<<< HEAD
 import { config } from '@/config/app';
-=======
 import { useRouter } from "next/navigation";
->>>>>>> dev
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
