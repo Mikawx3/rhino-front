@@ -11,12 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Trophy, 
   Plus, 
-  Calendar, 
   Users,
   Target,
   Send,
   Star,
-  Clock,
   Award,
   AlertCircle, 
   Loader2,
@@ -201,16 +199,6 @@ export default function ChallengesPage() {
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   const canCreateChallenges = user?.role === 'teacher' || user?.role === 'admin';
   
   // Filtrer d'abord les challenges selon les abonnements de l'utilisateur
@@ -359,12 +347,6 @@ export default function ChallengesPage() {
                     <span className="flex items-center">
                       <Star className="h-4 w-4 mr-1 text-yellow-500" />
                       {todayChallenge.points} points
-                    </span>
-                  )}
-                  {todayChallenge.deadline && (
-                    <span className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      Jusqu'à {formatDate(todayChallenge.deadline)}
                     </span>
                   )}
                 </CardDescription>
@@ -651,10 +633,6 @@ export default function ChallengesPage() {
                             {challenge.points} points
                           </span>
                         )}
-                        <span className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {formatDate(challenge.created_at)}
-                        </span>
                       </CardDescription>
                     </CardHeader>
                     <CardContent>

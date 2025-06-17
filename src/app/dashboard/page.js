@@ -406,10 +406,8 @@ export default function DashboardPage() {
               <Card key={matiere.name} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center">
-                      <Badge className={getSubjectColor(matiere.name)} variant="secondary">
-                        {matiere.name}
-                      </Badge>
+                    <CardTitle className="text-lg font-semibold text-gray-900">
+                      {matiere.name}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                       {/* Boutons d'abonnement pour tous les utilisateurs */}

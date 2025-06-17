@@ -13,7 +13,8 @@ import {
   University,
   MessageSquare,
   Trophy,
-  BookOpen
+  BookOpen,
+  Settings
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,6 +34,11 @@ export default function Navigation() {
     // { href: "/profile", label: "Profil", icon: User }
   ];
 
+  // Ajouter le bouton Admin pour les utilisateurs admin
+  const adminNavItems = user?.role === 'admin' ? [
+    { href: "/admin", label: "Admin", icon: Settings }
+  ] : [];
+
   const handleLogout = async () => {
     try {
       if (user?.isCasUser) {
@@ -48,7 +54,7 @@ export default function Navigation() {
     }
   };
 
-  const navItems = user ? authenticatedNavItems : publicNavItems;
+  const navItems = user ? [...authenticatedNavItems, ...adminNavItems] : publicNavItems;
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-3">
