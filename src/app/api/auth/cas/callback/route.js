@@ -5,7 +5,7 @@ import { config } from '@/config/app';
 import { headers } from 'next/headers';
 
 // Configuration de l'API (même que dans api-service.js)
-const API_BASE_URL = 'http://localhost:8888/api';
+const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
 
 export async function GET(req) {
   const headersList = await headers();
