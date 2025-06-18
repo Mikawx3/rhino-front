@@ -1,18 +1,28 @@
-// Configuration des URLs de l'application
+/**
+ * 🦏 Configuration d'application Rhino
+ * Re-export de la configuration d'environnement pour maintenir la compatibilité
+ */
+
+import { ENV_CONFIG } from './environment';
+
+// Configuration des URLs de l'application (legacy)
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
     // Côté client
     return window.location.origin;
   }
-  // Côté serveur - sera remplacé par l'URL de la requête
-  return process.env.NEXT_PUBLIC_APP_URL;
+  // Côté serveur
+  return ENV_CONFIG.FRONTEND_BASE_URL;
 };
 
 export const config = {
   getBaseUrl,
-  casLoginUrl: 'https://login.insa-lyon.fr/cas/login',
-  casLogoutUrl: 'https://login.insa-lyon.fr/cas/logout',
-  getCasCallbackUrl: () => `${getBaseUrl()}/api/auth/cas/callback`,
-  getLoginUrl: () => `${getBaseUrl()}/login`,
-  getDashboardUrl: () => `${getBaseUrl()}/dashboard`,
+  casLoginUrl: ENV_CONFIG.CAS_LOGIN_URL + '/login',
+  casLogoutUrl: ENV_CONFIG.CAS_LOGIN_URL + '/logout',
+  getCasCallbackUrl: () => ENV_CONFIG.getCasCallbackUrl(),
+  getLoginUrl: () => ENV_CONFIG.getFrontendUrl('/login'),
+  getDashboardUrl: () => ENV_CONFIG.getDashboardUrl(),
+  
+  // Export de la nouvelle configuration pour utilisation directe
+  ...ENV_CONFIG,
 }; 

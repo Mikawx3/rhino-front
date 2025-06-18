@@ -3,8 +3,7 @@
  * Service centralisé pour toutes les interactions avec l'API Rhino
  */
 
-// Configuration de l'API
-const API_BASE_URL = 'http://localhost:8888/api';
+import { ENV_CONFIG } from '@/config/environment';
 
 class RhinoAPIService {
   constructor(userId = null) {
@@ -20,7 +19,7 @@ class RhinoAPIService {
     }
 
     // Construire l'URL complète
-    const fullUrl = `${API_BASE_URL}${endpoint}`;
+    const fullUrl = `${ENV_CONFIG.API_BASE_URL}${endpoint}`;
     const url = new URL(fullUrl);
     
     // Ajouter le user_id seulement s'il n'est pas déjà présent
@@ -222,7 +221,7 @@ class RhinoAPIService {
     formData.append('file', file);
     formData.append('is_exam', isExam);
     
-    const url = `${API_BASE_URL}/matieres/${matiere}/documents?user_id=${this.userId}`;
+    const url = `${ENV_CONFIG.API_BASE_URL}/matieres/${matiere}/documents?user_id=${this.userId}`;
     
     try {
       const response = await fetch(url, {
@@ -260,7 +259,7 @@ class RhinoAPIService {
    * Télécharger le contenu d'un document
    */
   async getDocumentContent(matiere, documentId) {
-    const url = `${API_BASE_URL}/matieres/${matiere}/documents/${documentId}/content?user_id=${this.userId}`;
+    const url = `${ENV_CONFIG.API_BASE_URL}/matieres/${matiere}/documents/${documentId}/content?user_id=${this.userId}`;
     
     try {
       const response = await fetch(url);

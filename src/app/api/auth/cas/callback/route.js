@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { config } from '@/config/app';
 import { headers } from 'next/headers';
-
-// Configuration de l'API (même que dans api-service.js)
-const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
+import { ENV_CONFIG } from '@/config/environment';
 
 export async function GET(req) {
   const headersList = await headers();
@@ -16,11 +13,11 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const ticket = searchParams.get('ticket');
   if (!ticket) {
-    return NextResponse.redirect(`${baseUrl}/login?error=noticket`);
+    return NextResponse.redirect(ENV_CONFIG.getLoginErrorUrl('noticket'));
   }
 
-  const serviceUrl = `${baseUrl}/api/auth/cas/callback`;
-  const casValidateUrl = `https://login.insa-lyon.fr/cas/serviceValidate?ticket=${ticket}&service=${encodeURIComponent(serviceUrl)}`;
+  const serviceUrl = ENV_CONFIG.getCasCallbackUrl();
+  const casValidateUrl = `${ENV_CONFIG.CAS_LOGIN_URL}/serviceValidate?ticket=${ticket}&service=${encodeURIComponent(serviceUrl)}`;
 
   const response = await fetch(casValidateUrl);
   
@@ -70,7 +67,7 @@ export async function GET(req) {
       const username = altMatch[1];
     } else {
       console.log('❌ Aucun format username reconnu');
-      return NextResponse.redirect(`${baseUrl}/login?error=casfail`);
+      return NextResponse.redirect(ENV_CONFIG.getLoginErrorUrl('casfail'));
     }
   } else {
     console.log('✅ Username trouvé avec format standard:', usernameMatch[1]);
@@ -81,7 +78,7 @@ export async function GET(req) {
 
   // Helper function to make API requests
   const makeAPIRequest = async (endpoint, options = {}) => {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${ENV_CONFIG.API_BASE_URL}${endpoint}`;
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json',
@@ -157,7 +154,7 @@ export async function GET(req) {
         console.log('✅ Utilisateur créé avec succès, ID:', userId, 'Role:', userRole);
       } else {
         console.error('❌ Erreur: pas d\'user_id dans la réponse:', registerData);
-        return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=usercreation');
+        return NextResponse.redirect(ENV_CONFIG.getLoginErrorUrl('usercreation'));
       }
     } else {
       console.log('✅ Utilisateur existant, ID:', userId, 'Role:', userRole);
@@ -165,18 +162,18 @@ export async function GET(req) {
     
   } catch (error) {
     console.error('❌ Erreur lors de la communication avec l\'API:', error);
-    return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=apierror');
+    return NextResponse.redirect(ENV_CONFIG.getLoginErrorUrl('apierror'));
   }
 
   // Validation finale
   if (!userId) {
     console.error('❌ Erreur: Aucun userId obtenu');
-    return NextResponse.redirect('http://app.insa-lyon.fr:3001/login?error=nouserid');
+    return NextResponse.redirect(ENV_CONFIG.getLoginErrorUrl('nouserid'));
   }
 
 
   // Création de cookies de session avec toutes les infos nécessaires
-  const res = NextResponse.redirect('http://app.insa-lyon.fr:3001/dashboard');
+  const res = NextResponse.redirect(ENV_CONFIG.getDashboardUrl());
 
   
   // Cookies avec les informations utilisateur
