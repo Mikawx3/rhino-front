@@ -470,7 +470,7 @@ export default function QuestionsPage() {
       )}
 
       {/* Historique */}
-      {questionHistory.length > 0 && (
+      {/* {questionHistory.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle 
@@ -532,7 +532,7 @@ export default function QuestionsPage() {
             </CardContent>
           )}
         </Card>
-      )}
+      )} */}
     </div>
   );
 } 
