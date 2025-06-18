@@ -18,7 +18,7 @@ const environments = {
     CAS_CALLBACK_DIRECT_URL: process.env.NEXT_PUBLIC_CAS_CALLBACK_DIRECT_URL || 'http://app.insa-lyon.fr:3001/api/auth/cas/callback',
     
     // URL Dashboard spécifique (optionnel - sinon construite automatiquement)
-    DASHBOARD_DIRECT_URL: process.env.NEXT_PUBLIC_DASHBOARD_DIRECT_URL || null,
+    DASHBOARD_DIRECT_URL: process.env.NEXT_PUBLIC_DASHBOARD_DIRECT_URL || 'http://app.insa-lyon.fr:3001/dashboard   ',
   },
   production: {
     API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888/api',
@@ -27,10 +27,10 @@ const environments = {
     
     // URLs CAS spécifiques (optionnel - sinon construites automatiquement)
     CAS_LOGIN_DIRECT_URL: process.env.NEXT_PUBLIC_CAS_LOGIN_DIRECT_URL || 'https://login.insa-lyon.fr/cas/login',
-    CAS_CALLBACK_DIRECT_URL: process.env.NEXT_PUBLIC_CAS_CALLBACK_DIRECT_URL || 'http://app.insa-lyon.fr:3001/api/auth/cas/callback',
+    CAS_CALLBACK_DIRECT_URL: process.env.NEXT_PUBLIC_CAS_CALLBACK_DIRECT_URL || 'http://wired.city-lyon.fr:3001/api/auth/cas/callback',
     
     // URL Dashboard spécifique (optionnel - sinon construite automatiquement)
-    DASHBOARD_DIRECT_URL: process.env.NEXT_PUBLIC_DASHBOARD_DIRECT_URL || null,
+    DASHBOARD_DIRECT_URL: process.env.NEXT_PUBLIC_DASHBOARD_DIRECT_URL || 'http://localhost:3001/dashboard',
   }
 };
 
