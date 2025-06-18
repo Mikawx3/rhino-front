@@ -169,3 +169,13 @@ Pour toute question ou suggestion concernant le projet, n'hésitez pas à ouvrir
 ---
 
 **LeRhino** - Révolutionner l'apprentissage avec l'intelligence artificielle 🎓
+
+
+# Supprimer le conteneur existant
+podman rm -f rhino-front
+
+# Rebuild l'image (si besoin)
+podman build -t rhino-front .
+
+# Relancer le conteneur sur le port 3001
+podman run -d --name rhino-front -p 3001:3001 rhino-front

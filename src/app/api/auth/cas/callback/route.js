@@ -5,10 +5,10 @@ import { config } from '@/config/app';
 import { headers } from 'next/headers';
 
 // Configuration de l'API (même que dans api-service.js)
-const API_BASE_URL = 'http://app.insa-lyon.fr:8888/api';
+const API_BASE_URL = 'http://localhost:8888/api';
 
 export async function GET(req) {
-  const headersList = headers();
+  const headersList = await headers();
   const host = headersList.get('host');
   const protocol = headersList.get('x-forwarded-proto') || 'http';
   const baseUrl = `${protocol}://${host}`;
@@ -20,7 +20,7 @@ export async function GET(req) {
   }
 
   const serviceUrl = `${baseUrl}/api/auth/cas/callback`;
-  const casValidateUrl = `${config.casLoginUrl}/serviceValidate?ticket=${ticket}&service=${encodeURIComponent(serviceUrl)}`;
+  const casValidateUrl = `https://login.insa-lyon.fr/cas/serviceValidate?ticket=${ticket}&service=${encodeURIComponent(serviceUrl)}`;
 
   const response = await fetch(casValidateUrl);
   
@@ -55,12 +55,28 @@ export async function GET(req) {
   }
 
   // Extraction simple du username depuis la réponse XML
+  console.log('🔍 URL de validation:', casValidateUrl);
+  console.log('📝 Réponse CAS:', text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+  
   const usernameMatch = text.match(/<cas:user>([^<]+)<\/cas:user>/);
   if (!usernameMatch) {
     console.log('❌ Aucun username trouvé dans la réponse CAS');
-    return NextResponse.redirect(`${baseUrl}/login?error=casfail`);
+    console.log('🔍 Recherche de formats alternatifs...');
+    
+    // Essayer d'autres formats
+    const altMatch = text.match(/<user>([^<]+)<\/user>/);
+    if (altMatch) {
+      console.log('✅ Username trouvé avec format alternatif:', altMatch[1]);
+      const username = altMatch[1];
+    } else {
+      console.log('❌ Aucun format username reconnu');
+      return NextResponse.redirect(`${baseUrl}/login?error=casfail`);
+    }
+  } else {
+    console.log('✅ Username trouvé avec format standard:', usernameMatch[1]);
   }
-  const username = usernameMatch[1];
+  
+  const username = usernameMatch ? usernameMatch[1] : text.match(/<user>([^<]+)<\/user>/)?.[1];
   console.log('👤 Username extrait:', username);
 
   // Helper function to make API requests

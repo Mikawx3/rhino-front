@@ -46,6 +46,10 @@ export default function QuestionsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [reflectionQuestion, setReflectionQuestion] = useState(null);
   
+  // Challenge creation
+  const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
+  const [challengeCreated, setChallengeCreated] = useState(false);
+  
   // Historique
   const [questionHistory, setQuestionHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -121,7 +125,10 @@ export default function QuestionsPage() {
     try {
       setIsGenerating(true);
       setError(null);
+      setChallengeCreated(false); // Reset challenge status
+      setReflectionQuestion(null); // Reset previous question
       
+      // Générer la question de réflexion
       const response = await apiService.generateReflectionQuestion(selectedMatiere, conceptCle);
       setReflectionQuestion(response);
       
@@ -144,6 +151,32 @@ export default function QuestionsPage() {
       setError('Erreur lors de la génération de la question');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleCreateChallenge = async () => {
+    if (!reflectionQuestion || !reflectionQuestion.question || !selectedMatiere) {
+      setError('Aucune question de réflexion disponible pour créer un challenge');
+      return;
+    }
+
+    try {
+      setIsCreatingChallenge(true);
+      setError(null);
+      
+      await apiService.createChallenge({
+        matiere: selectedMatiere,
+        question: reflectionQuestion.question
+      });
+      
+      setChallengeCreated(true);
+      console.log('Challenge créé avec succès');
+      
+    } catch (challengeError) {
+      console.error('Erreur lors de la création du challenge:', challengeError);
+      setError('Erreur lors de la création du challenge');
+    } finally {
+      setIsCreatingChallenge(false);
     }
   };
 
@@ -398,6 +431,37 @@ export default function QuestionsPage() {
                   <p className="text-sm text-green-700 mt-2">
                     Contexte : {reflectionQuestion.context}
                   </p>
+                )}
+                
+                {/* Bouton création challenge - visible seulement pour teachers/admins */}
+                {(user?.role === 'teacher' || user?.role === 'admin') && (
+                  <div className="mt-4 flex items-center justify-between">
+                    {!challengeCreated ? (
+                      <Button
+                        onClick={handleCreateChallenge}
+                        disabled={isCreatingChallenge}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {isCreatingChallenge ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Création...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Créer un challenge
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <div className="flex items-center text-sm text-green-600">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        <span>Challenge créé avec succès !</span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
